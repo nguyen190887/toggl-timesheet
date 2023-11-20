@@ -13,9 +13,9 @@ public class Program
             return;
         }
         var inputFile = args[0];
-        
+
         var entries = LoadTimeEntries(inputFile);
-        // Console.WriteLine(JsonSerializer.Serialize(entries)); // for debugging
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
 
         var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
         var timesheetData = new Dictionary<string, ReportedTimeEntry>();
@@ -24,7 +24,7 @@ public class Program
         foreach (var entry in sortedEntries)
         {
             timesheetDays.Add(entry.StartDate.ToString("yyyy-MM-dd"));
-            var task = GenerateTask(entry.Description);
+            var task = GenerateTask(entry.Description, entry.Project);
             if (timesheetData.TryGetValue(task, out var timeData))
             {
                 if (timeData.DayTime.ContainsKey(entry.StartDate))
@@ -75,13 +75,13 @@ public class Program
             csv.WriteField(timeEntry.Task);
             foreach (var item in timeEntry.DayTime.Values)
             {
-                csv.WriteField(item.ToString());
+                csv.WriteField(Math.Round(item, 2).ToString());
             }
             csv.NextRecord();
         }
     }
 
-    static string GenerateTask(string description)
+    static string GenerateTask(string description, string project)
     {
         if (description.StartsWith("DC") && description.Contains("interview", StringComparison.OrdinalIgnoreCase))
         {
@@ -93,9 +93,16 @@ public class Program
             return "DC - 15% Prd";
         }
 
-        if (description.StartsWith("DC") && description.Contains("propo", StringComparison.OrdinalIgnoreCase))
+        if (description.StartsWith("DC") &&
+            (description.Contains("propo", StringComparison.OrdinalIgnoreCase) || description.Contains("pro.", StringComparison.OrdinalIgnoreCase)))
         {
             return "DC - Pro.";
+        }
+
+        if (description.StartsWith("DC") &&
+            description.Contains("omni", StringComparison.OrdinalIgnoreCase))
+        {
+            return "DC - Support";
         }
 
         if (description.StartsWith("A -"))
@@ -108,6 +115,18 @@ public class Program
             return "Atd - tasks";
         }
 
+        if (project.Equals("Self-Development", StringComparison.OrdinalIgnoreCase) ||
+            description.Contains("learning", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Learning";
+        }
+
+        if (project.Equals("Innovation", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Innovation";
+        }
+
+        Console.WriteLine("[Unknown task] {0} (project: {1})", description, project);
         return "Unknown";
     }
 }

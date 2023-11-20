@@ -19,11 +19,11 @@ public class Program
 
         var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
         var timesheetData = new Dictionary<string, ReportedTimeEntry>();
-        var timesheetDays = new HashSet<string>();
+        var timesheetDays = new HashSet<DateTime>();
 
         foreach (var entry in sortedEntries)
         {
-            timesheetDays.Add(entry.StartDate.ToString("yyyy-MM-dd"));
+            timesheetDays.Add(entry.StartDate);
             var task = GenerateTask(entry.Description, entry.Project);
             if (timesheetData.TryGetValue(task, out var timeData))
             {
@@ -60,11 +60,11 @@ public class Program
         return loadedEntries;
     }
 
-    static void SaveTimesheet(string outputFile, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<string> timesheetDays)
+    static void SaveTimesheet(string outputFile, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays)
     {
         using var writer = new StreamWriter(outputFile);
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        var headers = new List<string>(timesheetDays);
+        var headers = timesheetDays.Select(x => x.ToString("yyyy-MM-dd")).ToList();
         headers.Insert(0, "Task");
         csv.WriteField(headers);
         csv.NextRecord();
@@ -73,9 +73,13 @@ public class Program
         {
             var timeEntry = entry.Value;
             csv.WriteField(timeEntry.Task);
-            foreach (var item in timeEntry.DayTime.Values)
+            foreach (var day in timesheetDays)
             {
-                csv.WriteField(Math.Round(item, 2).ToString());
+                if (!timeEntry.DayTime.TryGetValue(day, out var duration))
+                {
+                    duration = 0;
+                }
+                csv.WriteField(Math.Round(duration, 2).ToString());
             }
             csv.NextRecord();
         }

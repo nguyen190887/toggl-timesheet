@@ -47,6 +47,9 @@ public class Program
         }
 
         SaveTimesheet("out.csv", timesheetData, timesheetDays.ToList());
+
+        Console.WriteLine("Press any key to exit!");
+        Console.ReadKey();
     }
 
     static List<TimeEntry> LoadTimeEntries(string inputFile)

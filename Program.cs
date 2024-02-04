@@ -107,14 +107,20 @@ public class Program
         }
 
         if (description.StartsWith("DC") &&
-            description.Contains("omni", StringComparison.OrdinalIgnoreCase))
+            description.Contains("support", StringComparison.OrdinalIgnoreCase))
         {
             return "DC - Support";
         }
 
+        if (description.StartsWith("DC") && description.Contains("iqbr", StringComparison.OrdinalIgnoreCase))
+        {
+            return "DC - iQRB";
+        }
+
         if (description.StartsWith("A -"))
         {
-            if (description.Contains("night meeting", StringComparison.OrdinalIgnoreCase)){
+            if (description.Contains("night meeting", StringComparison.OrdinalIgnoreCase))
+            {
                 return "Prx - night meeting";
             }
             return "Prx - tasks";
@@ -122,7 +128,8 @@ public class Program
 
         if (description.StartsWith("Atd -"))
         {
-            if (description.Contains("night meeting", StringComparison.OrdinalIgnoreCase)){
+            if (description.Contains("night meeting", StringComparison.OrdinalIgnoreCase))
+            {
                 return "Atd - night meeting";
             }
             return "Atd - tasks";

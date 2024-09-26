@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TogglTimesheet", "TogglTimesheet\TogglTimesheet.csproj", "{6C51DC0F-6E4C-4425-BFF7-1E20BAFF29DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TogglTimesheet.Tests", "TogglTimesheet.Tests\TogglTimesheet.Tests.csproj", "{5539CD49-7E78-4F18-9198-5AD77C3FA393}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C51DC0F-6E4C-4425-BFF7-1E20BAFF29DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C51DC0F-6E4C-4425-BFF7-1E20BAFF29DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C51DC0F-6E4C-4425-BFF7-1E20BAFF29DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C51DC0F-6E4C-4425-BFF7-1E20BAFF29DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F9EA7307-5883-477C-A080-4E7449D8DD5E}
+	EndGlobalSection
+EndGlobal

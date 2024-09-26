@@ -2,9 +2,9 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using CsvHelper.Configuration.Attributes;
 
-namespace TogglTimesheet
+namespace TogglTimesheet.TimesheetGenerators
 {
-    internal class TimeEntry
+    public class TimeEntry
     {
         public string Project { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
@@ -25,7 +25,7 @@ namespace TogglTimesheet
         public double Duration => TimeSpan.Parse(RawDuration).TotalHours;
     }
 
-    internal class ReportedTimeEntry
+    public class ReportedTimeEntry
     {
         public string Task { get; set; } = string.Empty;
         public Dictionary<DateTime, double> DayTime = [];

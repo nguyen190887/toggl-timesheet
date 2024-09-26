@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # Misc
 tmp/
+taskRules.local.json

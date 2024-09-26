@@ -41,7 +41,7 @@ namespace TogglTimesheet.TimesheetGenerators
             }
         }
 
-        public void GenerateAndSave(string inputFile)
+        public void GenerateAndSave(string inputFile, string taskRuleFile)
         {
             var entries = LoadTimeEntries(inputFile);
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
@@ -49,7 +49,7 @@ namespace TogglTimesheet.TimesheetGenerators
             var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
             var timesheetData = new Dictionary<string, ReportedTimeEntry>();
             var timesheetDays = new HashSet<DateTime>();
-            var taskGenerator = new TaskGenerator();
+            var taskGenerator = new TaskGenerator(taskRuleFile);
             foreach (var entry in sortedEntries)
             {
                 timesheetDays.Add(entry.StartDate);

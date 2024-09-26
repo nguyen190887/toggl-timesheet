@@ -15,9 +15,9 @@ public class Program
         var inputFile = args[0];
 
         var timesheetGenerator = new TimesheetGenerator();
-        timesheetGenerator.GenerateAndSave(inputFile);
+        timesheetGenerator.GenerateAndSave(inputFile, "taskRules.json");
 
         Console.WriteLine("Press any key to exit!");
-        Console.ReadKey();
+        Console.Read();
     }
 }

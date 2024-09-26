@@ -8,10 +8,11 @@
             "name": "Debug console",
             "type": "coreclr",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/Debug/net8.0/toggl-timesheet.dll",
+            "program": "${workspaceFolder}/TogglTimesheet/bin/Debug/net8.0/TogglTimesheet.exe",
             "args": [
                 "input.csv"
-            ]
+            ],
+            "cwd": "${workspaceFolder}/TogglTimesheet"
         }
     ]
 }

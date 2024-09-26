@@ -8,7 +8,21 @@ namespace TogglTimesheet.Tests
 
         public TaskGeneratorTests()
         {
-            _taskGenerator = new TaskGenerator();
+            var taskRules = new List<TaskRule>()
+            {
+                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"interview\")", TaskName = TaskConstants.DC_Interview },
+                new() { Expression = "description.StartsWith(\"DC\") && (description.Contains(\"productivity\") || description.Contains(\"initiatives\"))", TaskName = TaskConstants.DC_Productivity },
+                new() { Expression = "description.StartsWith(\"DC\") && (description.Contains(\"propo\") || description.Contains(\"pro.\"))", TaskName = TaskConstants.DC_Proposal },
+                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"support\")", TaskName = TaskConstants.DC_Support },
+                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"iqbr\")", TaskName = TaskConstants.DC_IQRB },
+                new() { Expression = "description.StartsWith(\"A -\") && description.Contains(\"night meeting\")", TaskName = TaskConstants.PRX_NightMeeting },
+                new() { Expression = "description.StartsWith(\"A -\")", TaskName = TaskConstants.PRX_Tasks },
+                new() { Expression = "description.StartsWith(\"Atd -\") && description.Contains(\"night meeting\")", TaskName = TaskConstants.ATD_NightMeeting },
+                new() { Expression = "description.StartsWith(\"Atd -\")", TaskName = TaskConstants.ATD_Tasks },
+                new() { Expression = "project == \"Self-Development\" || description.ContainsIgnoreCase(\"learning\")", TaskName = TaskConstants.Learning },
+                new() { Expression = "project == \"Innovation\"", TaskName = TaskConstants.Innovation }
+            };
+            _taskGenerator = new TaskGenerator(taskRules);
         }
 
         [Theory]

@@ -1,0 +1,46 @@
+[
+    {
+        "Expression": "description.StartsWith(\"DC\") && description.Contains(\"interview\")",
+        "TaskName": "DC - Itv"
+    },
+    {
+        "Expression": "description.StartsWith(\"DC\") && (description.Contains(\"productivity\") || description.Contains(\"initiatives\"))",
+        "TaskName": "DC - 15% Prd"
+    },
+    {
+        "Expression": "description.StartsWith(\"DC\") && (description.Contains(\"propo\") || description.Contains(\"pro.\"))",
+        "TaskName": "DC - Pro."
+    },
+    {
+        "Expression": "description.StartsWith(\"DC\") && description.Contains(\"support\")",
+        "TaskName": "DC - Support"
+    },
+    {
+        "Expression": "description.StartsWith(\"DC\") && description.Contains(\"iqbr\")",
+        "TaskName": "DC - iQRB"
+    },
+    {
+        "Expression": "description.StartsWith(\"A -\") && description.Contains(\"night meeting\")",
+        "TaskName": "Prx - night meeting"
+    },
+    {
+        "Expression": "description.StartsWith(\"A -\")",
+        "TaskName": "Prx - tasks"
+    },
+    {
+        "Expression": "description.StartsWith(\"Atd -\") && description.Contains(\"night meeting\")",
+        "TaskName": "Atd - night meeting"
+    },
+    {
+        "Expression": "description.StartsWith(\"Atd -\")",
+        "TaskName": "Atd - tasks"
+    },
+    {
+        "Expression": "project == \"Self-Development\" || description.ContainsIgnoreCase(\"learning\")",
+        "TaskName": "Learning"
+    },
+    {
+        "Expression": "project == \"Innovation\"",
+        "TaskName": "Innovation"
+    }
+]

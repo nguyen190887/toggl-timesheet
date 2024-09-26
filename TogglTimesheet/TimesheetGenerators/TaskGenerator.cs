@@ -1,45 +1,43 @@
 using System.Linq.Dynamic.Core;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
+using System.Text.Json;
 
 namespace TogglTimesheet.TimesheetGenerators
 {
     public class TaskGenerator
     {
-        private readonly List<TaskRule> _taskRules = new()
-            {
-                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"interview\")", TaskName = TaskConstants.DC_Interview },
-                new() { Expression = "description.StartsWith(\"DC\") && (description.Contains(\"productivity\") || description.Contains(\"initiatives\"))", TaskName = TaskConstants.DC_Productivity },
-                new() { Expression = "description.StartsWith(\"DC\") && (description.Contains(\"propo\") || description.Contains(\"pro.\"))", TaskName = TaskConstants.DC_Proposal },
-                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"support\")", TaskName = TaskConstants.DC_Support },
-                new() { Expression = "description.StartsWith(\"DC\") && description.Contains(\"iqbr\")", TaskName = TaskConstants.DC_IQRB },
-                new() { Expression = "description.StartsWith(\"A -\") && description.Contains(\"night meeting\")", TaskName = TaskConstants.PRX_NightMeeting },
-                new() { Expression = "description.StartsWith(\"A -\")", TaskName = TaskConstants.PRX_Tasks },
-                new() { Expression = "description.StartsWith(\"Atd -\") && description.Contains(\"night meeting\")", TaskName = TaskConstants.ATD_NightMeeting },
-                new() { Expression = "description.StartsWith(\"Atd -\")", TaskName = TaskConstants.ATD_Tasks },
-                new() { Expression = "project == \"Self-Development\" || description.ContainsIgnoreCase(\"learning\")", TaskName = TaskConstants.Learning },
-                new() { Expression = "project == \"Innovation\"", TaskName = TaskConstants.Innovation }
-            };
+        private readonly List<TaskRule> _taskRules;
 
         private static readonly ParsingConfig _parsingConfig = new()
         {
             CustomTypeProvider = new CustomTypeProvider(ParsingConfig.Default)
         };
 
-        public TaskGenerator()
+        public TaskGenerator(string jsonFilePath)
         {
-            // Constructor logic here
+            _taskRules = LoadTaskRulesFromJson(jsonFilePath);
         }
 
-        public class TaskRule
+        public TaskGenerator(List<TaskRule> taskRules)
         {
-            public string Expression { get; set; } = string.Empty;
-            public string TaskName { get; set; } = string.Empty;
+            _taskRules = taskRules;
         }
 
         public class TimesheetTask
         {
             public string Project { get; set; } = string.Empty;
             public string Description { get; set; } = string.Empty;
+        }
+
+        private List<TaskRule> LoadTaskRulesFromJson(string jsonFilePath)
+        {
+            if (!File.Exists(jsonFilePath))
+            {
+                throw new FileNotFoundException($"The file {jsonFilePath} does not exist.");
+            }
+
+            var json = File.ReadAllText(jsonFilePath);
+            return JsonSerializer.Deserialize<List<TaskRule>>(json) ?? new List<TaskRule>();
         }
 
         public string GenerateTask(string description, string project)
@@ -56,6 +54,12 @@ namespace TogglTimesheet.TimesheetGenerators
             var foundRule = _taskRules.FirstOrDefault(r => taskQuery.Any(_parsingConfig, r.Expression));
             return foundRule?.TaskName ?? TaskConstants.Unknown;
         }
+    }
+
+    public class TaskRule
+    {
+        public string Expression { get; set; } = string.Empty;
+        public string TaskName { get; set; } = string.Empty;
     }
 
     public static class TaskConstants

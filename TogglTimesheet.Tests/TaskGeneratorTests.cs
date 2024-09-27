@@ -1,4 +1,4 @@
-using TogglTimesheet.TimesheetGenerators;
+using TogglTimesheet.Timesheet;
 
 namespace TogglTimesheet.Tests
 {

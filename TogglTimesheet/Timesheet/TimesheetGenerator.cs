@@ -8,10 +8,13 @@ namespace TogglTimesheet.Timesheet
         private readonly string _inputFile;
         private readonly string _outputFile;
 
-        public TimesheetGenerator(string inputFile, string outputFile)
+        private readonly ITaskGenerator _taskGenerator;
+
+        public TimesheetGenerator(string inputFile, string outputFile, ITaskGenerator taskGenerator)
         {
             _inputFile = inputFile;
             _outputFile = outputFile;
+            _taskGenerator = taskGenerator;
         }
 
         private List<TimeEntry> LoadTimeEntries()
@@ -58,12 +61,12 @@ namespace TogglTimesheet.Timesheet
             var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
             var timesheetData = new Dictionary<string, ReportedTimeEntry>();
             var timesheetDays = new HashSet<DateTime>();
-            var taskGenerator = new TaskGenerator(taskRuleFile);
+
             foreach (var entry in sortedEntries)
             {
                 timesheetDays.Add(entry.StartDate);
-                var task = taskGenerator.GenerateTask(entry.Description, entry.Project);
-                
+                var task = _taskGenerator.GenerateTask(entry.Description, entry.Project);
+
                 if (task == TaskConstants.Unknown)
                 {
                     Console.WriteLine("[Unknown task] {0} (project: {1})", entry.Description, entry.Project);

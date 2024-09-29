@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace TogglTimesheet.Timesheet
 {
-    public class TaskGenerator
+    public class TaskGenerator : ITaskGenerator
     {
         private readonly List<TaskRule> _taskRules;
 

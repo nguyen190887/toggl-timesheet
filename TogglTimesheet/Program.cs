@@ -15,7 +15,8 @@ public class Program
         var inputFile = args[0];
         var outputFile = args.Length > 1 ? args[1] : "out.csv";
         var taskRulesFile = GetTaskRulesFile();
-        var timesheetGenerator = new TimesheetGenerator(inputFile, outputFile);
+        ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile); // Assuming TaskGenerator implements ITaskGenerator
+        var timesheetGenerator = new TimesheetGenerator(inputFile, outputFile, taskGenerator);
 
         try
         {

@@ -1,8 +1,10 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using TogglTimesheet.Timesheet;
 
 namespace TogglTimesheet;
 
+[ExcludeFromCodeCoverage]
 public class Program
 {
     static void Main(string[] args)
@@ -16,7 +18,8 @@ public class Program
         var outputFile = args.Length > 1 ? args[1] : "out.csv";
         var taskRulesFile = GetTaskRulesFile();
         ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile); // Assuming TaskGenerator implements ITaskGenerator
-        var timesheetGenerator = new TimesheetGenerator(inputFile, outputFile, taskGenerator);
+        IDataProvider dataProvider = new FileDataProvider(inputFile, outputFile);
+        var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
 
         try
         {

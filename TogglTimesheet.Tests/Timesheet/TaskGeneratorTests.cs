@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using TogglTimesheet.Timesheet;
 
-namespace TogglTimesheet.Timesheet.Tests
+namespace TogglTimesheet.Tests.Timesheet
 {
+    [ExcludeFromCodeCoverage]
     public class TaskGeneratorTests
     {
         private readonly TaskGenerator _taskGenerator;

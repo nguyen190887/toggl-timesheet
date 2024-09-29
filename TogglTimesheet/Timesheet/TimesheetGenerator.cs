@@ -53,7 +53,7 @@ namespace TogglTimesheet.Timesheet
             }
         }
 
-        public void GenerateAndSave(string taskRuleFile)
+        public void GenerateAndSave()
         {
             var entries = LoadTimeEntries();
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging

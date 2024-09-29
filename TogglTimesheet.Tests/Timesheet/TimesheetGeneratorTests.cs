@@ -10,7 +10,6 @@ namespace TogglTimesheet.Timesheet.Tests
             // Arrange
             var inputFile = "input.csv";
             var outputFile = "output.csv";
-            var taskRuleFile = "taskRules.json";
 
             var csvContent = "Start date,Project,Description,Duration\n" +
                 "2023-10-01,Project1,Task1,02:30:00\n" +
@@ -25,7 +24,7 @@ namespace TogglTimesheet.Timesheet.Tests
             var generator = new TimesheetGenerator(inputFile, outputFile, taskGenerator);
 
             // Act
-            generator.GenerateAndSave(taskRuleFile);
+            generator.GenerateAndSave();
 
             // Assert
             var expectedOutput = $"Task,2023-10-01,2023-10-02{Environment.NewLine}" +

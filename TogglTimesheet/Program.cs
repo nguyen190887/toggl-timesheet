@@ -20,7 +20,7 @@ public class Program
 
         try
         {
-            timesheetGenerator.GenerateAndSave(taskRulesFile);
+            timesheetGenerator.GenerateAndSave();
         }
         catch (Exception ex)
         {

@@ -3,7 +3,15 @@ using CsvHelper;
 
 namespace TogglTimesheet.Timesheet
 {
+
+    public interface ITimesheetGenerator
+    {
+        void GenerateAndSave();
+        (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries);
+    }
+
     public class TimesheetGenerator
+
     {
         private readonly ITaskGenerator _taskGenerator;
         private readonly IDataProvider _dataProvider;
@@ -19,6 +27,13 @@ namespace TogglTimesheet.Timesheet
             var entries = _dataProvider.LoadTimeEntries();
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
 
+            var (timesheetData, timesheetDays) = ProcessEntries(entries);
+
+            _dataProvider.SaveTimesheet(timesheetData, timesheetDays.ToList());
+        }
+
+        public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries)
+        {
             var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
             var timesheetData = new Dictionary<string, ReportedTimeEntry>();
             var timesheetDays = new HashSet<DateTime>();
@@ -54,9 +69,7 @@ namespace TogglTimesheet.Timesheet
                 }
             }
 
-            _dataProvider.SaveTimesheet(timesheetData, timesheetDays.ToList());
+            return (timesheetData, timesheetDays);
         }
-
-
     }
 }

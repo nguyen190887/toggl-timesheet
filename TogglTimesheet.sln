@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TogglTimesheet", "TogglTime
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TogglTimesheet.Tests", "TogglTimesheet.Tests\TogglTimesheet.Tests.csproj", "{5539CD49-7E78-4F18-9198-5AD77C3FA393}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TogglTimesheet.Api", "TogglTimesheet.Api\TogglTimesheet.Api.csproj", "{71184BAF-C1AA-4008-9C82-52368979B771}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5539CD49-7E78-4F18-9198-5AD77C3FA393}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71184BAF-C1AA-4008-9C82-52368979B771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71184BAF-C1AA-4008-9C82-52368979B771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71184BAF-C1AA-4008-9C82-52368979B771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71184BAF-C1AA-4008-9C82-52368979B771}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,11 +6,12 @@ namespace TogglTimesheet.Timesheet
 
     public interface ITimesheetGenerator
     {
-        void GenerateAndSave();
+        void GenerateAndSave(string inputFile, string outputFile);
+        MemoryStream GenerateData(Stream inputStream);
         (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries);
     }
 
-    public class TimesheetGenerator
+    public class TimesheetGenerator : ITimesheetGenerator
 
     {
         private readonly ITaskGenerator _taskGenerator;
@@ -22,14 +23,30 @@ namespace TogglTimesheet.Timesheet
             _dataProvider = dataProvider;
         }
 
-        public void GenerateAndSave()
+        public void GenerateAndSave(string inputFile, string outputFile)
         {
-            var entries = _dataProvider.LoadTimeEntries();
+            var entries = _dataProvider.LoadTimeEntries(inputFile);
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
 
             var (timesheetData, timesheetDays) = ProcessEntries(entries);
 
-            _dataProvider.SaveTimesheet(timesheetData, timesheetDays.ToList());
+            _dataProvider.SaveTimesheet(timesheetData, timesheetDays.ToList(), outputFile);
+        }
+
+        public MemoryStream GenerateData(Stream inputStream)
+        {
+            var entries = _dataProvider.LoadTimeEntriesFromStream(inputStream);
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
+
+            var (timesheetData, timesheetDays) = ProcessEntries(entries);
+
+            var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream, leaveOpen: true))
+            {
+                _dataProvider.SaveTimesheetToStream(streamWriter, timesheetData, timesheetDays.ToList());
+            }
+            memoryStream.Position = 0; // Reset the position to the beginning of the stream
+            return memoryStream;
         }
 
         public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries)

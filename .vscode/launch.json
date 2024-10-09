@@ -13,6 +13,26 @@
                 "input.csv"
             ],
             "cwd": "${workspaceFolder}/TogglTimesheet"
+        },
+        {
+            "name": "Debug TogglTimesheet.Api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/TogglTimesheet.Api/bin/Debug/net8.0/TogglTimesheet.Api.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/TogglTimesheet.Api",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
         }
     ]
 }

@@ -400,3 +400,4 @@ FodyWeavers.xsd
 # Misc
 tmp/
 taskRules.local.json
+appsettings.Local.json

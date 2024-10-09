@@ -1,3 +1,4 @@
+using TogglTimesheet.Api.Extensions;
 using TogglTimesheet.Timesheet;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,14 +8,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register dependencies
+// Load configuration based on environment
+var environment = builder.Environment;
+
+builder.Configuration
+    .SetBasePath(environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddScoped<ITaskGenerator, TaskGenerator>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
-    // var taskRulesFile = Program.GetTaskRulesFile(configuration);
-    // return new TaskGenerator(configuration.GetValue<string>("Toggl:TaskRulesFile") ?? "Config/taskRule.json");
     var env = provider.GetRequiredService<IWebHostEnvironment>();
-    var taskRulesFile = Path.Combine(env.ContentRootPath, configuration.GetValue<string>("Toggl:TaskRulesFile") ?? "Config/taskRules.json");
+    var taskRulesFile = Path.Combine(env.ContentRootPath, configuration.GetValue<string>("Toggl:TaskRuleFile") ?? "Config/taskRules.json");
     return new TaskGenerator(taskRulesFile);
 });
 builder.Services.AddScoped<IDataProvider, FileDataProvider>();
@@ -23,7 +30,7 @@ builder.Services.AddScoped<ITimesheetGenerator, TimesheetGenerator>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDev())
 {
     app.UseSwagger();
     app.UseSwaggerUI();

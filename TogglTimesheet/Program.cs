@@ -1,11 +1,10 @@
-﻿
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using TogglTimesheet.Timesheet;
 
 namespace TogglTimesheet;
 
 [ExcludeFromCodeCoverage]
-public class Program
+public static class Program
 {
     static void Main(string[] args)
     {
@@ -18,12 +17,12 @@ public class Program
         var outputFile = args.Length > 1 ? args[1] : "out.csv";
         var taskRulesFile = GetTaskRulesFile();
         ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile); // Assuming TaskGenerator implements ITaskGenerator
-        IDataProvider dataProvider = new FileDataProvider(inputFile, outputFile);
+        IDataProvider dataProvider = new FileDataProvider(); // No parameters needed
         var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
 
         try
         {
-            timesheetGenerator.GenerateAndSave();
+            timesheetGenerator.GenerateAndSave(inputFile, outputFile); // Ensure GenerateAndSave method uses inputFile and outputFile
         }
         catch (Exception ex)
         {
@@ -38,7 +37,6 @@ public class Program
     {
         const string localTaskRulesFile = "taskRules.local.json";
         const string defaultTaskRulesFile = "taskRules.json";
-
         return File.Exists(localTaskRulesFile) ? localTaskRulesFile : defaultTaskRulesFile;
     }
 }

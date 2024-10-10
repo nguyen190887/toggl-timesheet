@@ -1,0 +1,10 @@
+[
+    {
+        "Expression": "description.StartsWith(\"desc\") && description.Contains(\"itv\")",
+        "TaskName": "Interview"
+    },
+    {
+        "Expression": "description.ContainsIgnoreCase(\"desc\") && (description.Contains(\"abc\") || description.Contains(\"xyz\"))",
+        "TaskName": "Others"
+    }
+]

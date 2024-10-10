@@ -29,7 +29,7 @@ namespace TogglTimesheet.Timesheet
             public string Description { get; set; } = string.Empty;
         }
 
-        private List<TaskRule> LoadTaskRulesFromJson(string jsonFilePath)
+        private static List<TaskRule> LoadTaskRulesFromJson(string jsonFilePath)
         {
             if (!File.Exists(jsonFilePath))
             {
@@ -37,7 +37,7 @@ namespace TogglTimesheet.Timesheet
             }
 
             var json = File.ReadAllText(jsonFilePath);
-            return JsonSerializer.Deserialize<List<TaskRule>>(json) ?? new List<TaskRule>();
+            return JsonSerializer.Deserialize<List<TaskRule>>(json) ?? [];
         }
 
         public string GenerateTask(string description, string project)
@@ -51,7 +51,7 @@ namespace TogglTimesheet.Timesheet
                 }
             }.AsQueryable();
 
-            var foundRule = _taskRules.FirstOrDefault(r => taskQuery.Any(_parsingConfig, r.Expression));
+            var foundRule = _taskRules.Find(r => taskQuery.Any(_parsingConfig, r.Expression));
             return foundRule?.TaskName ?? TaskConstants.Unknown;
         }
     }

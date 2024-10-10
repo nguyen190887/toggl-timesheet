@@ -1,0 +1,13 @@
+@TogglTimesheet.Api_HostAddress = http://localhost:5131
+
+### Generate Timesheet
+POST {{TogglTimesheet.Api_HostAddress}}/api/timesheet/generate
+Content-Type: multipart/form-data
+Accept: application/octet-stream
+
+--boundary
+Content-Disposition: form-data; name="csvFile"; filename="sample.csv"
+Content-Type: text/csv
+
+< ./path/to/your/sample.csv
+--boundary--

@@ -28,8 +28,8 @@ namespace TogglTimesheet.Tests.Timesheet
             }
 
             // Act
-            var fileDataProvider = new FileDataProvider(_inputFile, _outputFile);
-            var result = fileDataProvider.LoadTimeEntries();
+            var fileDataProvider = new FileDataProvider();
+            var result = fileDataProvider.LoadTimeEntries(_inputFile);
 
             // Assert
             Assert.Equal(expectedEntries.Count, result.Count);
@@ -50,7 +50,7 @@ namespace TogglTimesheet.Tests.Timesheet
         public void SaveTimesheet_ShouldWriteEntriesToFile()
         {
             // Arrange
-            var mockFileDataProvider = new Mock<FileDataProvider>(_inputFile, _outputFile);
+            var mockFileDataProvider = new Mock<FileDataProvider>();
             var entries = new Dictionary<string, ReportedTimeEntry>
             {
                 { "Task1", new ReportedTimeEntry { Task = "Task1", DayTime = new Dictionary<DateTime, double> { { DateTime.Today, 2.5 } } } },
@@ -59,8 +59,8 @@ namespace TogglTimesheet.Tests.Timesheet
             var timesheetDays = new List<DateTime> { DateTime.Today };
 
             // Act
-            var fileDataProvider = new FileDataProvider(_inputFile, _outputFile);
-            fileDataProvider.SaveTimesheet(entries, timesheetDays);
+            var fileDataProvider = new FileDataProvider();
+            fileDataProvider.SaveTimesheet(entries, timesheetDays, _outputFile);
 
             // Assert
             using (var reader = new StreamReader(_outputFile))

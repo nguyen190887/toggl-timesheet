@@ -9,7 +9,19 @@
                 "build",
                 "${workspaceFolder}/TogglTimesheet.Api/TogglTimesheet.Api.csproj"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/TogglTimesheet.Tests/TogglTimesheet.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
         }
     ]
 }

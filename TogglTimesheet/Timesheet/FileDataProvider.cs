@@ -5,31 +5,40 @@ namespace TogglTimesheet.Timesheet
 {
     public interface IDataProvider
     {
-        List<TimeEntry> LoadTimeEntries();
-        void SaveTimesheet(Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays);
+        List<TimeEntry> LoadTimeEntriesFromStream(Stream inputStream);
+        List<TimeEntry> LoadTimeEntries(string inputFile);
+        void SaveTimesheet(Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays, string outputFile);
+        void SaveTimesheetToStream(StreamWriter writer, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays);
     }
 
     public class FileDataProvider : IDataProvider
     {
-        private readonly string _inputFile;
-        private readonly string _outputFile;
-
-        public FileDataProvider(string inputFile, string outputFile)
+        public List<TimeEntry> LoadTimeEntriesFromStream(Stream inputStream)
         {
-            _inputFile = inputFile;
-            _outputFile = outputFile;
+            using var reader = new StreamReader(inputStream);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            return csv.GetRecords<TimeEntry>().ToList();
         }
-
-        public List<TimeEntry> LoadTimeEntries()
+        public List<TimeEntry> LoadTimeEntries(string inputFile)
         {
-            using var reader = new StreamReader(_inputFile);
+            using var reader = new StreamReader(inputFile);
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             return csv.GetRecords<TimeEntry>().ToList();
         }
 
-        public void SaveTimesheet(Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays)
+        public void SaveTimesheet(Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays, string outputFile)
         {
-            using var writer = new StreamWriter(_outputFile);
+            if (outputFile == null)
+            {
+                throw new InvalidOperationException("Output file path cannot be null.");
+            }
+
+            using var writer = new StreamWriter(outputFile);
+            SaveTimesheetToStream(writer, entries, timesheetDays);
+        }
+
+        public void SaveTimesheetToStream(StreamWriter writer, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays)
+        {
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             var headers = timesheetDays.Select(x => x.ToString("yyyy-MM-dd")).ToList();
             headers.Insert(0, "Task");

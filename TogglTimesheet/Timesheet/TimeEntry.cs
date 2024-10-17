@@ -28,7 +28,7 @@ namespace TogglTimesheet.Timesheet
         [JsonIgnore]
         public string RawDuration { get; set; } = string.Empty;
 
-        public double Duration => TimeSpan.Parse(RawDuration).TotalHours;
+        public double Duration => TimeSpan.TryParse(RawDuration, out var parsedDuration) ? parsedDuration.TotalHours : 0;
     }
 
     public class ReportedTimeEntry

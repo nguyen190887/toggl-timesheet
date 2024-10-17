@@ -157,14 +157,14 @@ namespace TogglTimesheet.Timesheet
             public long Id { get; set; }
 
             [JsonPropertyName("name")]
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
         }
     }
 
     public class TimeData
     {
-        public string ProjectName { get; set; }
-        public string Description { get; set; }
+        public string ProjectName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public double Duration { get; set; }

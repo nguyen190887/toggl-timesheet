@@ -13,11 +13,6 @@ namespace TogglTimesheet.Timesheet
 {
     public interface ITimeDataLoader
     {
-        Task<(string jsonResponse, List<JsonTimeEntry> jsonTimeEntries)> FetchDetailedReportAsync(
-            string apiToken, string workspaceId, string startDate, string endDate);
-
-        Task<Dictionary<long, string>> FetchProjectsAsync(string apiToken, string workspaceId);
-
         Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate);
     }
 
@@ -38,7 +33,7 @@ namespace TogglTimesheet.Timesheet
         /// <param name="startDate">The start date for the report.</param>
         /// <param name="endDate">The end date for the report.</param>
         /// <returns>A JSON string containing the detailed report.</returns>
-        public async Task<(string jsonResponse, List<JsonTimeEntry> jsonTimeEntries)> FetchDetailedReportAsync(
+        private async Task<(string jsonResponse, List<JsonTimeEntry> jsonTimeEntries)> FetchDetailedReportAsync(
             string apiToken, string workspaceId, string startDate, string endDate)
         {
             if (string.IsNullOrWhiteSpace(apiToken))
@@ -85,7 +80,7 @@ namespace TogglTimesheet.Timesheet
         /// <param name="apiToken">The API token for authentication.</param>
         /// <param name="workspaceId">The workspace ID for the projects.</param>
         /// <returns>A dictionary with project ID as the key and project name as the value.</returns>
-        public async Task<Dictionary<long, string>> FetchProjectsAsync(string apiToken, string workspaceId)
+        private async Task<Dictionary<long, string>> FetchProjectsAsync(string apiToken, string workspaceId)
         {
             if (string.IsNullOrWhiteSpace(apiToken))
             {
@@ -120,7 +115,6 @@ namespace TogglTimesheet.Timesheet
             return projectDictionary;
         }
 
-
         public async Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate)
         {
             var fetchProjectsTask = FetchProjectsAsync(apiToken, workspaceId);
@@ -151,7 +145,7 @@ namespace TogglTimesheet.Timesheet
             return timeDataList;
         }
 
-        private class Project
+        public class Project
         {
             [JsonPropertyName("id")]
             public long Id { get; set; }

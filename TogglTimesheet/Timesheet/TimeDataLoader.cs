@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace TogglTimesheet.Timesheet
@@ -14,6 +15,10 @@ namespace TogglTimesheet.Timesheet
     {
         Task<(string jsonResponse, List<JsonTimeEntry> jsonTimeEntries)> FetchDetailedReportAsync(
             string apiToken, string workspaceId, string startDate, string endDate);
+
+        Task<Dictionary<long, string>> FetchProjectsAsync(string apiToken, string workspaceId);
+
+        Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate);
     }
 
     public class TimeDataLoader : ITimeDataLoader
@@ -38,19 +43,19 @@ namespace TogglTimesheet.Timesheet
         {
             if (string.IsNullOrWhiteSpace(apiToken))
             {
-            throw new ArgumentException("API token cannot be null or whitespace.", nameof(apiToken));
+                throw new ArgumentException("API token cannot be null or whitespace.", nameof(apiToken));
             }
 
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
-            throw new ArgumentException("Workspace ID cannot be null or whitespace.", nameof(workspaceId));
+                throw new ArgumentException("Workspace ID cannot be null or whitespace.", nameof(workspaceId));
             }
 
             var requestUri = $"/reports/api/v3/workspace/{workspaceId}/search/time_entries";
             var requestBody = new
             {
-            start_date = startDate,
-            end_date = endDate
+                start_date = startDate,
+                end_date = endDate
             };
 
             var requestJson = JsonSerializer.Serialize(requestBody);
@@ -58,7 +63,7 @@ namespace TogglTimesheet.Timesheet
 
             var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
             {
-            Content = requestContent
+                Content = requestContent
             };
 
             var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
@@ -73,5 +78,95 @@ namespace TogglTimesheet.Timesheet
 
             return (responseContent, jsonTimeEntries);
         }
+
+        /// <summary>
+        /// Fetches the list of projects from the Toggl API.
+        /// </summary>
+        /// <param name="apiToken">The API token for authentication.</param>
+        /// <param name="workspaceId">The workspace ID for the projects.</param>
+        /// <returns>A dictionary with project ID as the key and project name as the value.</returns>
+        public async Task<Dictionary<long, string>> FetchProjectsAsync(string apiToken, string workspaceId)
+        {
+            if (string.IsNullOrWhiteSpace(apiToken))
+            {
+                throw new ArgumentException("API token cannot be null or whitespace.", nameof(apiToken));
+            }
+
+            if (string.IsNullOrWhiteSpace(workspaceId))
+            {
+                throw new ArgumentException("Workspace ID cannot be null or whitespace.", nameof(workspaceId));
+            }
+
+            var requestUri = $"/api/v9/workspaces/{workspaceId}/projects";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+            var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+
+            var response = await _httpClient.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var projects = JsonSerializer.Deserialize<List<Project>>(responseContent) ?? new List<Project>();
+
+            var projectDictionary = new Dictionary<long, string>();
+            foreach (var project in projects)
+            {
+                projectDictionary[project.Id] = project.Name;
+            }
+
+            return projectDictionary;
+        }
+
+
+        public async Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate)
+        {
+            var fetchProjectsTask = FetchProjectsAsync(apiToken, workspaceId);
+            var fetchDetailedReportTask = FetchDetailedReportAsync(apiToken, workspaceId, startDate, endDate);
+
+            await Task.WhenAll(fetchProjectsTask, fetchDetailedReportTask);
+
+            var projects = await fetchProjectsTask;
+            var (jsonResponse, jsonTimeEntries) = await fetchDetailedReportTask;
+
+            var timeDataList = new List<TimeData>();
+
+            foreach (var entry in jsonTimeEntries)
+            {
+                var projectId = entry.ProjectId ?? -1; // Use a default value for null ProjectId
+                var projectName = projects.ContainsKey(projectId) ? projects[projectId] : "Unknown";
+                var timeData = new TimeData
+                {
+                    ProjectName = projectName,
+                    Description = entry.Description,
+                    StartDate = entry.StartDate,
+                    EndDate = entry.EndDate,
+                    Duration = entry.Duration
+                };
+                timeDataList.Add(timeData);
+            }
+
+            return timeDataList;
+        }
+
+        private class Project
+        {
+            [JsonPropertyName("id")]
+            public long Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+        }
+    }
+
+    public class TimeData
+    {
+        public string ProjectName { get; set; }
+        public string Description { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public double Duration { get; set; }
     }
 }

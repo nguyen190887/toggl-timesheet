@@ -19,6 +19,12 @@ namespace TogglTimesheet.Timesheet
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public DateTime EndDate { get; set; }
 
+        [JsonPropertyName("project_id")]
+        public long? ProjectId { get; set; }
+
+        [JsonIgnore]
+        public string ProjectName { get; set; } = string.Empty;
+
         [JsonPropertyName("time_entries")]
         public List<TimeEntryDetail>? JsonTimeEntries
         {

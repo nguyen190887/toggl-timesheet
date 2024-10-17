@@ -38,12 +38,8 @@ namespace TogglTimesheet.Api.Controllers
             string startDateString = startDate.ToString(DateFormat);
             string endDateString = endDate.ToString(DateFormat);
 
-            var timeEntries = await _timeDataLoader.FetchDetailedReportAsync(apiToken, workspaceId, startDateString, endDateString);
-            return Ok(new
-            {
-                rawData = timeEntries.jsonResponse,
-                timeEntries = timeEntries.jsonTimeEntries
-            });
+            var timeData = await _timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDateString, endDateString);
+            return Ok(timeData);
         }
     }
 }

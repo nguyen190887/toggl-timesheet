@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
+using TogglTimesheet.Api.Config;
 using TogglTimesheet.Api.Extensions;
 using TogglTimesheet.Timesheet;
 
@@ -21,6 +23,9 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+// Register TogglConfig options
+builder.Services.Configure<TogglConfig>(builder.Configuration.GetSection("Toggl"));
 
 builder.Services.AddScoped<ITaskGenerator, TaskGenerator>(provider =>
 {

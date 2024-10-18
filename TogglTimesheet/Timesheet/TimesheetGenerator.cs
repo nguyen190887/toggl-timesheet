@@ -10,7 +10,8 @@ namespace TogglTimesheet.Timesheet
     {
         void GenerateAndSave(string inputFile, string outputFile);
         MemoryStream GenerateData(Stream inputStream);
-        (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries);
+        MemoryStream ProcessAndGenerateTimesheet(IEnumerable<TimeEntryBase> entries);
+        (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntryBase> entries);
     }
 
     public class TimesheetGenerator : ITimesheetGenerator
@@ -39,6 +40,12 @@ namespace TogglTimesheet.Timesheet
             var entries = _dataProvider.LoadTimeEntriesFromStream(inputStream);
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
 
+            var memoryStream = ProcessAndGenerateTimesheet(entries);
+            return memoryStream;
+        }
+
+        public MemoryStream ProcessAndGenerateTimesheet(IEnumerable<TimeEntryBase> entries)
+        {
             var (timesheetData, timesheetDays) = ProcessEntries(entries);
 
             var memoryStream = new MemoryStream();
@@ -50,7 +57,7 @@ namespace TogglTimesheet.Timesheet
             return memoryStream;
         }
 
-        public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntry> entries)
+        public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays) ProcessEntries(IEnumerable<TimeEntryBase> entries)
         {
             var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
             var timesheetData = new Dictionary<string, ReportedTimeEntry>();

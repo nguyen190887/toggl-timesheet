@@ -17,7 +17,7 @@
 - Ensure no warning in the generated code
 - Use latest feature of C#
 - Shorten the object initialization to `new()` if possible
-- Follow ImplicitUsings instruction in *.csproj file
+- Follow ImplicitUsings instruction in *.csproj file (see topic in the Additional Resources section)
 
 ## Example
 
@@ -55,3 +55,4 @@ namespace ExampleNamespace
 - [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 - [DRY Principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
 - [Code Documentation Best Practices](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
+- [Implicit using directives] (https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives) 

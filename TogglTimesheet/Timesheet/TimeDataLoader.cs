@@ -13,7 +13,7 @@ namespace TogglTimesheet.Timesheet
 {
     public interface ITimeDataLoader
     {
-        Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate);
+        Task<List<TimeEntryBase>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate);
     }
 
     public class TimeDataLoader : ITimeDataLoader
@@ -115,7 +115,7 @@ namespace TogglTimesheet.Timesheet
             return projectDictionary;
         }
 
-        public async Task<List<TimeData>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate)
+        public async Task<List<TimeEntryBase>> FetchTimeDataAsync(string apiToken, string workspaceId, string startDate, string endDate)
         {
             var fetchProjectsTask = FetchProjectsAsync(apiToken, workspaceId);
             var fetchDetailedReportTask = FetchDetailedReportAsync(apiToken, workspaceId, startDate, endDate);
@@ -125,24 +125,17 @@ namespace TogglTimesheet.Timesheet
             var projects = await fetchProjectsTask;
             var (jsonResponse, jsonTimeEntries) = await fetchDetailedReportTask;
 
-            var timeDataList = new List<TimeData>();
-
             foreach (var entry in jsonTimeEntries)
             {
                 var projectId = entry.ProjectId ?? -1; // Use a default value for null ProjectId
-                var projectName = projects.ContainsKey(projectId) ? projects[projectId] : "Unknown";
-                var timeData = new TimeData
-                {
-                    ProjectName = projectName,
-                    Description = entry.Description,
-                    StartDate = entry.StartDate,
-                    EndDate = entry.EndDate,
-                    Duration = entry.Duration
-                };
-                timeDataList.Add(timeData);
+                entry.Project = projects.ContainsKey(projectId) ? projects[projectId] : "Unknown";
+
+                // Set StartDate and EndDate to use the Day component from the DateTime object only
+                entry.StartDate = entry.StartDate.Date;
+                entry.EndDate = entry.EndDate.Date;
             }
 
-            return timeDataList;
+            return jsonTimeEntries.Cast<TimeEntryBase>().ToList();
         }
 
         public class Project
@@ -153,14 +146,5 @@ namespace TogglTimesheet.Timesheet
             [JsonPropertyName("name")]
             public string Name { get; set; } = string.Empty;
         }
-    }
-
-    public class TimeData
-    {
-        public string ProjectName { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public double Duration { get; set; }
     }
 }

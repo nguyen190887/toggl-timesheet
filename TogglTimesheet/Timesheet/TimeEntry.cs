@@ -5,30 +5,53 @@ using CsvHelper.Configuration.Attributes;
 
 namespace TogglTimesheet.Timesheet
 {
-    public class TimeEntry
+    public abstract class TimeEntryBase
+    {
+        public virtual DateTime StartDate { get; set; }
+        public virtual DateTime EndDate { get; set; }
+        public virtual double Duration { get; set; }
+        public abstract string Project { get; set; }
+        public abstract string Description { get; set; }
+    }
+
+    public class TimeEntry : TimeEntryBase
     {
         private const string DateFormat = "yyyy-MM-dd";
-        public string Project { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
 
         [Name("Start date")]
         [JsonIgnore]
         public string RawStartDate { get; set; } = string.Empty;
 
-        public DateTime StartDate => DateTime.TryParseExact(
-            RawStartDate,
-            DateFormat,
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out var parsedStartDate)
-            ? parsedStartDate
-            : DateTime.MinValue;
+        [Ignore]
+        public override DateTime StartDate
+        {
+            get => DateTime.TryParseExact(
+                RawStartDate,
+                DateFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var parsedStartDate)
+                ? parsedStartDate
+                : DateTime.MinValue;
+            set { /* Do nothing */ }
+        }
 
         [Name("Duration")]
         [JsonIgnore]
         public string RawDuration { get; set; } = string.Empty;
 
-        public double Duration => TimeSpan.TryParse(RawDuration, out var parsedDuration) ? parsedDuration.TotalHours : 0;
+        [Ignore]
+        public override double Duration
+        {
+            get => TimeSpan.TryParse(RawDuration, out var parsedDuration) ? parsedDuration.TotalHours : 0;
+            set { /* Do nothing */ }
+        }
+
+        [JsonPropertyName("project")]
+        public override string Project { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public override string Description { get; set; } = string.Empty;
     }
 
     public class ReportedTimeEntry

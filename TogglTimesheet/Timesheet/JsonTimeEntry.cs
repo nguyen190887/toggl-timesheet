@@ -5,25 +5,25 @@ using System.Text.Json.Serialization;
 
 namespace TogglTimesheet.Timesheet
 {
-    public class JsonTimeEntry
+    public class JsonTimeEntry : TimeEntryBase
     {
         [JsonPropertyName("description")]
-        public string Description { get; set; } = string.Empty;
+        public override string Description { get; set; } = string.Empty;
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public double Duration { get; set; }
+        public override double Duration { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public DateTime StartDate { get; set; }
+        public override DateTime StartDate { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public DateTime EndDate { get; set; }
+        public override DateTime EndDate { get; set; }
 
         [JsonPropertyName("project_id")]
         public long? ProjectId { get; set; }
 
         [JsonIgnore]
-        public string ProjectName { get; set; } = string.Empty;
+        public override string Project { get; set; } = string.Empty;
 
         [JsonPropertyName("time_entries")]
         public List<TimeEntryDetail>? JsonTimeEntries

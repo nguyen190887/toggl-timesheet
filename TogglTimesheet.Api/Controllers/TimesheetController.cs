@@ -55,6 +55,30 @@ namespace TogglTimesheet.Api.Controllers
             var timeData = await _timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDateString, endDateString);
             return Ok(timeData);
         }
+
+        [HttpGet("download-time-report")]
+        public async Task<IActionResult> DownloadTimeReport(string? apiToken, string? workspaceId, DateTime startDate, DateTime endDate)
+        {
+            const string DateFormat = "yyyy-MM-dd";
+
+            if (string.IsNullOrEmpty(apiToken))
+            {
+            apiToken = _togglConfig.Value.ApiToken;
+            }
+
+            if (string.IsNullOrEmpty(workspaceId))
+            {
+            workspaceId = _togglConfig.Value.WorkspaceId;
+            }
+
+            string startDateString = startDate.ToString(DateFormat);
+            string endDateString = endDate.ToString(DateFormat);
+
+            var timeData = await _timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDateString, endDateString);
+            var timesheetData = _timesheetGenerator.ProcessAndGenerateTimesheet(timeData);
+
+            return File(timesheetData, "application/octet-stream", "time_report.csv");
+        }
     }
 
 }

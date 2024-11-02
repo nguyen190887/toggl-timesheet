@@ -22,6 +22,17 @@
             ],
             "problemMatcher": "$msCompile",
             "group": "build"
+        },
+        {
+            "label": "build-console",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/TogglTimesheet/TogglTimesheet.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
         }
     ]
 }

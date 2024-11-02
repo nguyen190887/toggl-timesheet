@@ -1,10 +1,17 @@
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Options;
+using TogglTimesheet.Api.Config;
 using TogglTimesheet.Api.Extensions;
 using TogglTimesheet.Timesheet;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -17,6 +24,9 @@ builder.Configuration
     .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// Register TogglConfig options
+builder.Services.Configure<TogglConfig>(builder.Configuration.GetSection("Toggl"));
+
 builder.Services.AddScoped<ITaskGenerator, TaskGenerator>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
@@ -26,6 +36,12 @@ builder.Services.AddScoped<ITaskGenerator, TaskGenerator>(provider =>
 });
 builder.Services.AddScoped<IDataProvider, FileDataProvider>();
 builder.Services.AddScoped<ITimesheetGenerator, TimesheetGenerator>();
+builder.Services.AddHttpClient<ITimeDataLoader, TimeDataLoader>(client =>
+{
+    var configuration = builder.Configuration;
+    var baseUrl = configuration.GetValue<string>("Toggl:BaseUrl");
+    client.BaseAddress = new Uri(baseUrl ?? string.Empty);
+});
 
 var app = builder.Build();
 

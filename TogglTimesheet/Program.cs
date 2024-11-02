@@ -31,7 +31,15 @@ public static class Program
         }
 
         Console.WriteLine("Press any key to exit!");
-        Console.ReadKey();
+
+        try
+        {
+            Console.ReadKey();
+        }
+        catch (InvalidOperationException)
+        {
+            Console.WriteLine("Console input is not available. Exiting...");
+        }
     }
 
     private static string GetTaskRulesFile()

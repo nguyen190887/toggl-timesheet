@@ -46,32 +46,53 @@ namespace TogglTimesheet.Timesheet
                 throw new ArgumentException("Workspace ID cannot be null or whitespace.", nameof(workspaceId));
             }
 
-            var requestUri = $"/reports/api/v3/workspace/{workspaceId}/search/time_entries";
-            var requestBody = new
+            var allTimeEntries = new List<JsonTimeEntry>();
+            var allJsonResponses = new StringBuilder();
+            int? nextRowNumber = 1; // Start from 1 instead of 0
+
+            do
             {
-                start_date = startDate,
-                end_date = endDate
-            };
+                var requestUri = $"/reports/api/v3/workspace/{workspaceId}/search/time_entries";
+                var requestBody = new
+                {
+                    start_date = startDate,
+                    end_date = endDate,
+                    first_row_number = nextRowNumber
+                };
 
-            var requestJson = JsonSerializer.Serialize(requestBody);
-            var requestContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
+                var requestJson = JsonSerializer.Serialize(requestBody);
+                var requestContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
-            {
-                Content = requestContent
-            };
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = requestContent
+                };
 
-            var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+                var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{apiToken}:api_token"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authToken);
 
-            var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request);
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var jsonTimeEntries = JsonSerializer.Deserialize<List<JsonTimeEntry>>(responseContent) ?? new List<JsonTimeEntry>();
+                var responseContent = await response.Content.ReadAsStringAsync();
+                allJsonResponses.Append(responseContent);
+                var jsonTimeEntries = JsonSerializer.Deserialize<List<JsonTimeEntry>>(responseContent) ?? new List<JsonTimeEntry>();
 
-            return (responseContent, jsonTimeEntries);
+                allTimeEntries.AddRange(jsonTimeEntries);
+
+                if (response.Headers.TryGetValues("x-next-row-number", out var nextRowNumberValues))
+                {
+                    nextRowNumber = int.Parse(nextRowNumberValues.FirstOrDefault() ?? "0");
+                }
+                else
+                {
+                    nextRowNumber = null;
+                }
+
+            } while (nextRowNumber.HasValue);
+
+            return (allJsonResponses.ToString(), allTimeEntries);
         }
 
         /// <summary>

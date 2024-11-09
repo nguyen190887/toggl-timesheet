@@ -7,27 +7,60 @@ namespace TogglTimesheet;
 [ExcludeFromCodeCoverage]
 public static class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        if (args.Length == 0)
-        {
-            Console.WriteLine("Usage: TogglTimesheet <filename> [<output>]");
-            return;
-        }
-        var inputFile = args[0];
-        var outputFile = args.Length > 1 ? args[1] : "out.csv";
+        var parameters = ParseArguments(args);
+        var outputFile = parameters.GetValueOrDefault("output", "out.csv");
         var taskRulesFile = GetTaskRulesFile();
-        ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile); // Assuming TaskGenerator implements ITaskGenerator
-        IDataProvider dataProvider = new FileDataProvider(); // No parameters needed
+
+        ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile);
+        IDataProvider dataProvider = new FileDataProvider();
         var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
+        using var httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("https://api.track.toggl.com/")
+        };
+        ITimeDataLoader timeDataLoader = new TimeDataLoader(httpClient);
 
         try
         {
-            timesheetGenerator.GenerateAndSave(inputFile, outputFile); // Ensure GenerateAndSave method uses inputFile and outputFile
+            if (parameters.ContainsKey("input"))
+            {
+                // Process local file
+                timesheetGenerator.GenerateAndSave(parameters["input"], outputFile);
+            }
+            else
+            {
+                // Fetch from API
+                if (!parameters.TryGetValue("startDate", out var startDate) ||
+                    !parameters.TryGetValue("endDate", out var endDate))
+                {
+                    Console.WriteLine("Usage: TogglTimesheet --input=<filename> or --startDate=yyyy-MM-dd --endDate=yyyy-MM-dd [--output=<filename>] [--token=<apiToken>] [--workspace=<workspaceId>]");
+                    return;
+                }
+
+                var apiToken = parameters.GetValueOrDefault("token") ??
+                             Environment.GetEnvironmentVariable("TOGGL_API_TOKEN");
+                var workspaceId = parameters.GetValueOrDefault("workspace") ??
+                                 Environment.GetEnvironmentVariable("TOGGL_WORKSPACE_ID");
+
+                if (string.IsNullOrEmpty(apiToken) || string.IsNullOrEmpty(workspaceId))
+                {
+                    Console.WriteLine("API token and workspace ID must be provided either via command line arguments or environment variables");
+                    return;
+                }
+
+                var timeData = await timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDate, endDate);
+                var timesheetData = timesheetGenerator.ProcessAndGenerateTimesheet(timeData);
+                await File.WriteAllBytesAsync(outputFile, timesheetData.ToArray());
+            }
+
+            Console.WriteLine($"Timesheet generated successfully to {outputFile}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
+            return;
         }
 
         Console.WriteLine("Press any key to exit!");
@@ -40,6 +73,25 @@ public static class Program
         {
             Console.WriteLine("Console input is not available. Exiting...");
         }
+    }
+
+    private static Dictionary<string, string> ParseArguments(string[] args)
+    {
+        var parameters = new Dictionary<string, string>();
+        foreach (var arg in args)
+        {
+            if (arg.StartsWith("--"))
+            {
+                var equalIndex = arg.IndexOf('=');
+                if (equalIndex > 0)
+                {
+                    var key = arg.Substring(2, equalIndex - 2);
+                    var value = arg.Substring(equalIndex + 1).Trim('"');
+                    parameters[key] = value;
+                }
+            }
+        }
+        return parameters;
     }
 
     private static string GetTaskRulesFile()

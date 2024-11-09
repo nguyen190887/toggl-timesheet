@@ -8,9 +8,14 @@
             "name": "Debug console",
             "type": "coreclr",
             "request": "launch",
+            "preLaunchTask": "build-console",
             "program": "${workspaceFolder}/TogglTimesheet/bin/Debug/net8.0/TogglTimesheet.exe",
             "args": [
-                "input.csv"
+                "--startDate=\"2024-11-02\"",
+                "--endDate=\"2024-11-09\"",
+                "--output=time.csv",
+                "--token=<YOUR_TOKEN>",
+                "--workspace=<YOUR_WORKSPACE>"
             ],
             "cwd": "${workspaceFolder}/TogglTimesheet"
         },

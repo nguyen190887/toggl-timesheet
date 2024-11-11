@@ -24,13 +24,6 @@ public static class Program
         IDataProvider dataProvider = new FileDataProvider();
         var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
 
-        var baseAddress = configuration.GetValue<string>("TogglApi:BaseAddress") ?? "https://localhost";
-        using var httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(baseAddress)
-        };
-        ITimeDataLoader timeDataLoader = new TimeDataLoader(httpClient);
-
         try
         {
             if (parameters.ContainsKey("input"))
@@ -40,33 +33,7 @@ public static class Program
             }
             else
             {
-                // Fetch from API
-                if (!parameters.TryGetValue("startDate", out var startDate) ||
-                    !parameters.TryGetValue("endDate", out var endDate))
-                {
-                    Console.WriteLine("Usage: TogglTimesheet --input=<filename> or --startDate=yyyy-MM-dd --endDate=yyyy-MM-dd [--output=<filename>] [--token=<apiToken>] [--workspace=<workspaceId>]");
-                    return;
-                }
-
-                var apiToken = parameters.GetValueOrDefault("token") ??
-                             Environment.GetEnvironmentVariable("TOGGL_API_TOKEN") ??
-                             configuration.GetValue<string>("TogglApi:ApiToken");
-
-                var workspaceId = parameters.GetValueOrDefault("workspace") ??
-                                 Environment.GetEnvironmentVariable("TOGGL_WORKSPACE_ID") ??
-                                 configuration.GetValue<string>("TogglApi:WorkspaceId");
-
-                if (string.IsNullOrEmpty(apiToken) || string.IsNullOrEmpty(workspaceId))
-                {
-                    Console.WriteLine("API token and workspace ID must be provided either via command line arguments or environment variables");
-                    return;
-                }
-
-                Console.WriteLine($"StartDate: {startDate}, EndDate: {endDate}, Token: {apiToken}, Workspace: {workspaceId}");
-
-                var timeData = await timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDate, endDate);
-                var timesheetData = timesheetGenerator.ProcessAndGenerateTimesheet(timeData);
-                await File.WriteAllBytesAsync(outputFile, timesheetData.ToArray());
+                await FetchDataFromApiAsync(parameters, configuration, timesheetGenerator, outputFile);
             }
 
             Console.WriteLine($"Timesheet generated successfully to {outputFile}");
@@ -87,6 +54,52 @@ public static class Program
         {
             Console.WriteLine("Console input is not available. Exiting...");
         }
+    }
+
+    private static async Task FetchDataFromApiAsync(
+        Dictionary<string, string> parameters,
+        IConfiguration configuration,
+        TimesheetGenerator timesheetGenerator,
+        string outputFile)
+    {
+        if (!parameters.TryGetValue("startDate", out var startDate) ||
+            !parameters.TryGetValue("endDate", out var endDate))
+        {
+            throw new ArgumentException("Usage: TogglTimesheet --input=<filename> or --startDate=yyyy-MM-dd --endDate=yyyy-MM-dd [--output=<filename>] [--token=<apiToken>] [--workspace=<workspaceId>]");
+        }
+
+        var apiToken = GetConfigValue(parameters, "token", "TOGGL_API_TOKEN", configuration, "TogglApi:ApiToken");
+        var workspaceId = GetConfigValue(parameters, "workspace", "TOGGL_WORKSPACE_ID", configuration, "TogglApi:WorkspaceId");
+
+        if (string.IsNullOrEmpty(apiToken) || string.IsNullOrEmpty(workspaceId))
+        {
+            throw new ArgumentException("API token and workspace ID must be provided either via command line arguments or environment variables");
+        }
+
+        Console.WriteLine($"StartDate: {startDate}, EndDate: {endDate}, Token: {apiToken}, Workspace: {workspaceId}");
+
+        var baseAddress = configuration.GetValue<string>("TogglApi:BaseAddress") ?? "https://localhost";
+        using var httpClient = new HttpClient
+        {
+            BaseAddress = new Uri(baseAddress)
+        };
+        ITimeDataLoader timeDataLoader = new TimeDataLoader(httpClient);
+
+        var timeData = await timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDate, endDate);
+        var timesheetData = timesheetGenerator.ProcessAndGenerateTimesheet(timeData);
+        await File.WriteAllBytesAsync(outputFile, timesheetData.ToArray());
+    }
+
+    private static string GetConfigValue(
+        Dictionary<string, string> parameters,
+        string paramName,
+        string envVarName,
+        IConfiguration configuration,
+        string configKey)
+    {
+        return parameters.GetValueOrDefault(paramName) ??
+               Environment.GetEnvironmentVariable(envVarName) ??
+               configuration.GetValue<string>(configKey) ?? string.Empty;
     }
 
     private static Dictionary<string, string> ParseArguments(string[] args)
@@ -110,10 +123,10 @@ public static class Program
 
     private static string GetTaskRulesFile(IConfiguration configuration)
     {
-        var configuredPath = configuration.GetValue<string>("TaskRulesFile");
+        var configuredPath = configuration.GetValue<string>("TogglApi:TaskRuleFile");
         if (string.IsNullOrEmpty(configuredPath))
         {
-            throw new InvalidOperationException("TaskRulesFile configuration is required");
+            throw new InvalidOperationException("TaskRuleFile configuration is required");
         }
 
         if (!File.Exists(configuredPath))

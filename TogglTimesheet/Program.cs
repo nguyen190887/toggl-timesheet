@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using TogglTimesheet.Timesheet;
+using Microsoft.Extensions.Configuration;
 
 namespace TogglTimesheet;
 
@@ -9,16 +10,24 @@ public static class Program
 {
     static async Task Main(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+            .Build();
+
         var parameters = ParseArguments(args);
         var outputFile = parameters.GetValueOrDefault("output", "out.csv");
-        var taskRulesFile = GetTaskRulesFile();
+        var taskRulesFile = GetTaskRulesFile(configuration);
 
         ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile);
         IDataProvider dataProvider = new FileDataProvider();
         var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
+
+        var baseAddress = configuration.GetValue<string>("TogglApi:BaseAddress") ?? "https://localhost";
         using var httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://api.track.toggl.com/")
+            BaseAddress = new Uri(baseAddress)
         };
         ITimeDataLoader timeDataLoader = new TimeDataLoader(httpClient);
 
@@ -40,9 +49,12 @@ public static class Program
                 }
 
                 var apiToken = parameters.GetValueOrDefault("token") ??
-                             Environment.GetEnvironmentVariable("TOGGL_API_TOKEN");
+                             Environment.GetEnvironmentVariable("TOGGL_API_TOKEN") ??
+                             configuration.GetValue<string>("TogglApi:ApiToken");
+
                 var workspaceId = parameters.GetValueOrDefault("workspace") ??
-                                 Environment.GetEnvironmentVariable("TOGGL_WORKSPACE_ID");
+                                 Environment.GetEnvironmentVariable("TOGGL_WORKSPACE_ID") ??
+                                 configuration.GetValue<string>("TogglApi:WorkspaceId");
 
                 if (string.IsNullOrEmpty(apiToken) || string.IsNullOrEmpty(workspaceId))
                 {
@@ -96,10 +108,19 @@ public static class Program
         return parameters;
     }
 
-    private static string GetTaskRulesFile()
+    private static string GetTaskRulesFile(IConfiguration configuration)
     {
-        const string localTaskRulesFile = "taskRules.local.json";
-        const string defaultTaskRulesFile = "taskRules.json";
-        return File.Exists(localTaskRulesFile) ? localTaskRulesFile : defaultTaskRulesFile;
+        var configuredPath = configuration.GetValue<string>("TaskRulesFile");
+        if (string.IsNullOrEmpty(configuredPath))
+        {
+            throw new InvalidOperationException("TaskRulesFile configuration is required");
+        }
+
+        if (!File.Exists(configuredPath))
+        {
+            throw new FileNotFoundException($"Task rules file not found at: {configuredPath}");
+        }
+
+        return configuredPath;
     }
 }

@@ -50,6 +50,8 @@ public static class Program
                     return;
                 }
 
+                Console.WriteLine($"StartDate: {startDate}, EndDate: {endDate}, Token: {apiToken}, Workspace: {workspaceId}");
+
                 var timeData = await timeDataLoader.FetchTimeDataAsync(apiToken, workspaceId, startDate, endDate);
                 var timesheetData = timesheetGenerator.ProcessAndGenerateTimesheet(timeData);
                 await File.WriteAllBytesAsync(outputFile, timesheetData.ToArray());
@@ -59,7 +61,7 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            Console.WriteLine($"An error occurred: {ex.Message} {ex.StackTrace}");
             return;
         }
 

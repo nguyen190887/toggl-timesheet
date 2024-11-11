@@ -2,17 +2,30 @@
 Tool to generate tracked time data from [Toggl](https://toggl.com/) Detailed report (CSV format) to tabular format (used by many software companies).
 
 # How to use console?
-- Export [Toggl](https://track.toggl.com/timer) Detailed report (CSV file is downloaded)
-- Build the exe file by compiling the TogglTimesheet project
-- Run the code (if you're developer) or the binary file using following syntaxes:
-  ```bash
-  # Run as a developer
-  dotnet run <toggl_csv_detailed_report_file> [<output_file>]
+You can use the console application in two ways:
 
-  # Run as a user
-  dotnet toggl-timesheet.dll <toggl_csv_detailed_report_file> [<output_file>]
-  ```
-- If no output file is specified, the result will be written to `out.csv` by default
+1. Process a local CSV file:
+   ```bash
+   # Run as a developer
+   dotnet run --input=<toggl_csv_detailed_report_file> [--output=<output_file>]
+
+   # Run as a user
+   TogglTimesheet.exe --input=<toggl_csv_detailed_report_file> [--output=<output_file>]
+   ```
+
+2. Fetch data directly from Toggl API:
+   ```bash
+   # Run as a developer
+   dotnet run --startDate=yyyy-MM-dd --endDate=yyyy-MM-dd [--output=<output_file>] [--token=<apiToken>] [--workspace=<workspaceId>]
+
+   # Run as a user
+   TogglTimesheet.exe --startDate=yyyy-MM-dd --endDate=yyyy-MM-dd [--output=<output_file>] [--token=<apiToken>] [--workspace=<workspaceId>]
+   ```
+   Note: For API access, you need to provide:
+   - API token: via --token parameter or TOGGL_API_TOKEN environment variable
+   - Workspace ID: via --workspace parameter or TOGGL_WORKSPACE_ID environment variable
+
+If no output file is specified, the result will be written to `out.csv` by default.
 
 # How to use API?
 

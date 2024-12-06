@@ -1,33 +1,32 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using TogglTimesheet.Timesheet;
+using Microsoft.Extensions.Configuration;
 
 namespace TogglTimesheet;
 
 [ExcludeFromCodeCoverage]
 public static class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        if (args.Length == 0)
-        {
-            Console.WriteLine("Usage: TogglTimesheet <filename> [<output>]");
-            return;
-        }
-        var inputFile = args[0];
-        var outputFile = args.Length > 1 ? args[1] : "out.csv";
-        var taskRulesFile = GetTaskRulesFile();
-        ITaskGenerator taskGenerator = new TaskGenerator(taskRulesFile); // Assuming TaskGenerator implements ITaskGenerator
-        IDataProvider dataProvider = new FileDataProvider(); // No parameters needed
-        var timesheetGenerator = new TimesheetGenerator(taskGenerator, dataProvider);
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
+            .Build();
 
         try
         {
-            timesheetGenerator.GenerateAndSave(inputFile, outputFile); // Ensure GenerateAndSave method uses inputFile and outputFile
+            var application = new TimesheetApplication(configuration);
+            await application.RunAsync(args);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"An error occurred: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Details: {ex.InnerException.Message}");
+            }
+            return;
         }
 
         Console.WriteLine("Press any key to exit!");
@@ -40,12 +39,5 @@ public static class Program
         {
             Console.WriteLine("Console input is not available. Exiting...");
         }
-    }
-
-    private static string GetTaskRulesFile()
-    {
-        const string localTaskRulesFile = "taskRules.local.json";
-        const string defaultTaskRulesFile = "taskRules.json";
-        return File.Exists(localTaskRulesFile) ? localTaskRulesFile : defaultTaskRulesFile;
     }
 }

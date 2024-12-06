@@ -36,6 +36,24 @@ namespace TogglTimesheet.Timesheet
             set { /* Do nothing */ }
         }
 
+        [Name("End date")]
+        [JsonIgnore]
+        public string RawEndDate { get; set; } = string.Empty;
+
+        [Ignore]
+        public override DateTime EndDate
+        {
+            get => DateTime.TryParseExact(
+                RawEndDate,
+                DateFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var parsedEndDate)
+                ? parsedEndDate
+                : DateTime.MinValue;
+            set { /* Do nothing */ }
+        }
+
         [Name("Duration")]
         [JsonIgnore]
         public string RawDuration { get; set; } = string.Empty;

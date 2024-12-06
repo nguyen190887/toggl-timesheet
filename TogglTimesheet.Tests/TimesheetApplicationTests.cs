@@ -135,7 +135,7 @@ namespace TogglTimesheet.Tests
             var args = new[] { "--output=result.csv" };
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => app.RunAsync(args));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => app.RunAsync(args));
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace TogglTimesheet.Tests
             };
 
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => app.RunAsync(args));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => app.RunAsync(args));
         }
 
         private HttpClient CreateMockHttpClient()

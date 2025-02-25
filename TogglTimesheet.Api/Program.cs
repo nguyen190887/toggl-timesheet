@@ -6,6 +6,9 @@ using TogglTimesheet.Timesheet;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Update Lambda hosting to use minimal API hosting instead of API Gateway
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

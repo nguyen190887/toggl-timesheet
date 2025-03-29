@@ -69,6 +69,7 @@ resource "aws_lambda_function" "api" {
       ASPNETCORE_ENVIRONMENT = var.environment
       Toggl__ApiToken       = var.toggl_api_token
       Toggl__WorkspaceId    = var.toggl_workspace_id
+      Toggl__TaskRuleFile   = var.toggl_task_rule_file
     }
   }
 }

@@ -24,3 +24,9 @@ variable "toggl_workspace_id" {
   type        = string
   sensitive   = true
 }
+
+variable "toggl_task_rule_file" {
+  description = "Path to the task rules configuration file"
+  type        = string
+  default     = "Config/taskRules.json"
+}

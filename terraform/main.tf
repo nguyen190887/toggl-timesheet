@@ -1,4 +1,6 @@
 terraform {
+  backend "s3" {}
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -13,7 +15,7 @@ provider "aws" {
 
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
-  name = "toggl_timesheet_lambda_role"
+  name = "toggl-timesheet-lambda-role-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -31,7 +33,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # IAM policy for Lambda
 resource "aws_iam_role_policy" "lambda_policy" {
-  name = "toggl_timesheet_lambda_policy"
+  name = "toggl-timesheet-lambda-policy-${var.environment}"
   role = aws_iam_role.lambda_role.id
 
   policy = jsonencode({
@@ -55,14 +57,18 @@ resource "aws_lambda_function" "api" {
   filename         = var.lambda_package_path
   function_name    = "toggl-timesheet-api-${var.environment}"
   role            = aws_iam_role.lambda_role.arn
-  handler         = "TogglTimesheet.Api"
-  runtime         = "provided.al2"
+  handler         = "TogglTimesheet.Api::TogglTimesheet.Api.LambdaEntryPoint::FunctionHandlerAsync"
+  runtime         = "dotnet8"
   memory_size     = 256
   timeout         = 30
+  architectures   = ["x86_64"]
+  source_code_hash = filebase64sha256(var.lambda_package_path)
 
   environment {
     variables = {
       ASPNETCORE_ENVIRONMENT = var.environment
+      Toggl__ApiToken       = var.toggl_api_token
+      Toggl__WorkspaceId    = var.toggl_workspace_id
     }
   }
 }
@@ -79,5 +85,9 @@ resource "aws_lambda_function_url" "api_url" {
     allow_headers     = ["*"]
     expose_headers    = ["*"]
     max_age          = 86400
+  }
+
+  lifecycle {
+    replace_triggered_by = [aws_lambda_function.api.function_name]
   }
 }

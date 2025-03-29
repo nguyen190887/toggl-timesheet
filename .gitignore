@@ -403,6 +403,9 @@ taskRules.local.json
 appsettings.Local.json
 TogglTimesheet/out.csv
 TogglTimesheet/input.csv
-terraform/.terraform.lock.hcl
+
+# Terraform
 .terraform/
-terraform.tfstate
+*.tfstate
+*.tfstate.*
+.terraform.*

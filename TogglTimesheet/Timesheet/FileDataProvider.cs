@@ -18,6 +18,11 @@ namespace TogglTimesheet.Timesheet
 
     public class FileDataProvider : IDataProvider
     {
+        private static string FormatDuration(double duration)
+        {
+            return Math.Round(duration, 2, MidpointRounding.AwayFromZero).ToString("F2", CultureInfo.InvariantCulture);
+        }
+
         public List<TimeEntry> LoadTimeEntriesFromStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
@@ -61,10 +66,26 @@ namespace TogglTimesheet.Timesheet
                     {
                         duration = 0;
                     }
-                    csv.WriteField(Math.Round(duration, 2).ToString());
+                    csv.WriteField(FormatDuration(duration));
                 }
                 csv.NextRecord();
             }
+
+            // Add sum row
+            csv.WriteField("Total");
+            foreach (var day in timesheetDays)
+            {
+                var dayTotal = entries.Values.Sum(entry =>
+                {
+                    if (entry.DayTime.TryGetValue(day, out var duration))
+                    {
+                        return duration;
+                    }
+                    return 0;
+                });
+                csv.WriteField(FormatDuration(dayTotal));
+            }
+            csv.NextRecord();
         }
     }
 }

@@ -410,3 +410,11 @@ TogglTimesheet/input.csv
 *.tfstate
 *.tfstate.*
 .terraform.*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production

@@ -1,4 +1,4 @@
-# React + Vite
+# Toggl Timesheet App
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -6,6 +6,19 @@ Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Environment Variables
+
+The application uses environment variables for configuration. To set up:
+
+1. Copy `.env.example` to `.env`
+2. Update the values in `.env` according to your environment:
+
+```properties
+VITE_API_BASE_URL=https://your-api-url-here/api/timesheet
+```
+
+Note: All environment variables must be prefixed with `VITE_` to be accessible in the React application.
 
 ## Expanding the ESLint configuration
 

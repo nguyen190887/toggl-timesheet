@@ -1,12 +1,16 @@
+/// <reference types="vite/client" />
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const App: React.FC = () => {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const today = new Date();
@@ -22,8 +26,35 @@ const App: React.FC = () => {
     setStartDate(startDateISO);
   }, []);
 
-  const handleGetTimeReport = () => {
-    alert(`Fetching time report from ${startDate} to ${endDate}`);
+  const handleGetTimeReport = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(
+        `${baseUrl}/download-time-report?startDate=${startDate}&endDate=${endDate}`,
+        { method: 'GET' }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch report: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `timesheet-${startDate}-to-${endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to download report');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -48,6 +79,7 @@ const App: React.FC = () => {
         value={startDate}
         onChange={(e) => setStartDate(e.target.value)}
         InputLabelProps={{ shrink: true }}
+        disabled={isLoading}
       />
       <TextField
         label="End Date"
@@ -55,14 +87,28 @@ const App: React.FC = () => {
         value={endDate}
         onChange={(e) => setEndDate(e.target.value)}
         InputLabelProps={{ shrink: true }}
+        disabled={isLoading}
       />
+      {error && (
+        <Typography color="error" variant="body2">
+          {error}
+        </Typography>
+      )}
       <Button
         variant="contained"
         color="primary"
         onClick={handleGetTimeReport}
+        disabled={isLoading}
         sx={{ mt: 2 }}
       >
-        Generate Report
+        {isLoading ? (
+          <>
+            <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
+            Generating Report...
+          </>
+        ) : (
+          'Generate Report'
+        )}
       </Button>
     </Box>
   );

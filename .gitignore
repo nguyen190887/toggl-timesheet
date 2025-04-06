@@ -404,3 +404,9 @@ appsettings.Local.json
 TogglTimesheet/out.csv
 TogglTimesheet/input.csv
 .DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.*

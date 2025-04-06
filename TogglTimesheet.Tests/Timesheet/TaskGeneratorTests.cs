@@ -17,17 +17,17 @@ namespace TogglTimesheet.Tests.Timesheet
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"DC\") && description.Contains(\"interview\")",
-                    TaskName = TaskConstants.DC_Interview
+                    TaskName = TaskConstants.DC_Itv
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"DC\") && (description.Contains(\"productivity\") || description.Contains(\"initiatives\"))",
-                    TaskName = TaskConstants.DC_Productivity
+                    TaskName = TaskConstants.DC_Prod
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"DC\") && (description.Contains(\"propo\") || description.Contains(\"pro.\"))",
-                    TaskName = TaskConstants.DC_Proposal
+                    TaskName = TaskConstants.DC_Pro
                 },
                 new TaskRule
                 {
@@ -37,27 +37,27 @@ namespace TogglTimesheet.Tests.Timesheet
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"DC\") && description.Contains(\"iqbr\")",
-                    TaskName = TaskConstants.DC_IQRB
+                    TaskName = TaskConstants.DC_IQ
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"A -\") && description.Contains(\"night meeting\")",
-                    TaskName = TaskConstants.PRX_NightMeeting
+                    TaskName = TaskConstants.P1_NM
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"A -\")",
-                    TaskName = TaskConstants.PRX_Tasks
+                    TaskName = TaskConstants.P1_Tasks
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"Atd -\") && description.Contains(\"night meeting\")",
-                    TaskName = TaskConstants.ATD_NightMeeting
+                    TaskName = TaskConstants.A1_NM
                 },
                 new TaskRule
                 {
                     Expression = "description.StartsWith(\"Atd -\")",
-                    TaskName = TaskConstants.ATD_Tasks
+                    TaskName = TaskConstants.A1_Tasks
                 },
                 new TaskRule
                 {
@@ -74,17 +74,17 @@ namespace TogglTimesheet.Tests.Timesheet
         }
 
         [Theory]
-        [InlineData("DC - interview: case 1", "", TaskConstants.DC_Interview)]
-        [InlineData("DC - productivity: meeting", "", TaskConstants.DC_Productivity)]
-        [InlineData("DC - initiatives: activity", "", TaskConstants.DC_Productivity)]
-        [InlineData("DC - propo__", "", TaskConstants.DC_Proposal)]
-        [InlineData("DC - pro. - proj X", "", TaskConstants.DC_Proposal)]
+        [InlineData("DC - interview: case 1", "", TaskConstants.DC_Itv)]
+        [InlineData("DC - productivity: meeting", "", TaskConstants.DC_Prod)]
+        [InlineData("DC - initiatives: activity", "", TaskConstants.DC_Prod)]
+        [InlineData("DC - propo__", "", TaskConstants.DC_Pro)]
+        [InlineData("DC - pro. - proj X", "", TaskConstants.DC_Pro)]
         [InlineData("DC - support", "", TaskConstants.DC_Support)]
-        [InlineData("DC - iqbr", "", TaskConstants.DC_IQRB)]
-        [InlineData("A - night meeting", "", TaskConstants.PRX_NightMeeting)]
-        [InlineData("A - some task", "", TaskConstants.PRX_Tasks)]
-        [InlineData("Atd - night meeting", "", TaskConstants.ATD_NightMeeting)]
-        [InlineData("Atd - some task", "", TaskConstants.ATD_Tasks)]
+        [InlineData("DC - iqbr", "", TaskConstants.DC_IQ)]
+        [InlineData("A - night meeting", "", TaskConstants.P1_NM)]
+        [InlineData("A - some task", "", TaskConstants.P1_Tasks)]
+        [InlineData("Atd - night meeting", "", TaskConstants.A1_NM)]
+        [InlineData("Atd - some task", "", TaskConstants.A1_Tasks)]
         [InlineData("Some description", "Self-Development", TaskConstants.Learning)]
         [InlineData("Learning something new", "", TaskConstants.Learning)]
         [InlineData("Some description", "Innovation", TaskConstants.Innovation)]

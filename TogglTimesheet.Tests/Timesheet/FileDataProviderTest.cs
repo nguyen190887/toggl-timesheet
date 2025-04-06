@@ -94,7 +94,7 @@ namespace TogglTimesheet.Tests.Timesheet
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 var records = csv.GetRecords<dynamic>().ToList();
-                Assert.Equal(2, records.Count);
+                Assert.Equal(3, records.Count);
 
                 var record1 = ((IDictionary<string, object>) records[0])
                     .ToDictionary(k => k.Key, k => k.Value.ToString());

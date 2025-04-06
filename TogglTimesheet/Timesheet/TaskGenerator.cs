@@ -65,15 +65,15 @@ namespace TogglTimesheet.Timesheet
 
     public static class TaskConstants
     {
-        public const string DC_Interview = "DC - Itv";
-        public const string DC_Productivity = "DC - 15% Prd";
-        public const string DC_Proposal = "DC - Pro.";
+        public const string DC_Itv = "DC - Itv";
+        public const string DC_Prod = "DC - 15% Prd";
+        public const string DC_Pro = "DC - Pro.";
         public const string DC_Support = "DC - Support";
-        public const string DC_IQRB = "DC - iQRB";
-        public const string PRX_NightMeeting = "Prx - night meeting";
-        public const string PRX_Tasks = "Prx - tasks";
-        public const string ATD_NightMeeting = "Atd - night meeting";
-        public const string ATD_Tasks = "Atd - tasks";
+        public const string DC_IQ = "DC - iQ";
+        public const string P1_NM = "P1 - night meeting";
+        public const string P1_Tasks = "P1 -tasks";
+        public const string A1_NM = "A1 - night meeting";
+        public const string A1_Tasks = "A1 - tasks";
         public const string Learning = "Learning";
         public const string Innovation = "Innovation";
         public const string Unknown = "Unknown";

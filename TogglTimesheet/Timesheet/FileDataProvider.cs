@@ -13,11 +13,29 @@ namespace TogglTimesheet.Timesheet
         List<TimeEntry> LoadTimeEntriesFromStream(Stream inputStream);
         List<TimeEntry> LoadTimeEntries(string inputFile);
         void SaveTimesheet(Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays, string outputFile);
-        void SaveTimesheetToStream(StreamWriter writer, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays);
+        void SaveTimesheet(
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            string outputFile,
+            IEnumerable<(string Description, string Project)> unknownTasks);
+        void SaveTimesheetToStream(
+            StreamWriter writer,
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays);
+        void SaveTimesheetToStream(
+            StreamWriter writer,
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            IEnumerable<(string Description, string Project)> unknownTasks);
     }
 
     public class FileDataProvider : IDataProvider
     {
+        private static string FormatDuration(double duration)
+        {
+            return Math.Round(duration, 2, MidpointRounding.AwayFromZero).ToString("G", CultureInfo.InvariantCulture);
+        }
+
         public List<TimeEntry> LoadTimeEntriesFromStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
@@ -43,7 +61,31 @@ namespace TogglTimesheet.Timesheet
             SaveTimesheetToStream(writer, entries, timesheetDays);
         }
 
+        public void SaveTimesheet(
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            string outputFile,
+            IEnumerable<(string Description, string Project)> unknownTasks)
+        {
+            if (outputFile == null)
+            {
+                throw new InvalidOperationException("Output file path cannot be null.");
+            }
+
+            using var writer = new StreamWriter(outputFile);
+            SaveTimesheetToStream(writer, entries, timesheetDays, unknownTasks);
+        }
+
         public void SaveTimesheetToStream(StreamWriter writer, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays)
+        {
+            SaveTimesheetToStream(writer, entries, timesheetDays, Enumerable.Empty<(string Description, string Project)>());
+        }
+
+        public void SaveTimesheetToStream(
+            StreamWriter writer,
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            IEnumerable<(string Description, string Project)> unknownTasks)
         {
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             var headers = timesheetDays.Select(x => x.ToString("yyyy-MM-dd")).ToList();
@@ -61,9 +103,53 @@ namespace TogglTimesheet.Timesheet
                     {
                         duration = 0;
                     }
-                    csv.WriteField(Math.Round(duration, 2).ToString());
+                    csv.WriteField(FormatDuration(duration));
                 }
                 csv.NextRecord();
+            }
+
+            // Add sum row
+            csv.WriteField("Total");
+            foreach (var day in timesheetDays)
+            {
+                var dayTotal = entries.Values.Sum(entry =>
+                {
+                    if (entry.DayTime.TryGetValue(day, out var duration))
+                    {
+                        return duration;
+                    }
+                    return 0;
+                });
+                csv.WriteField(FormatDuration(dayTotal));
+            }
+            csv.NextRecord();
+
+            // Add unknown tasks if any
+            if (unknownTasks.Any())
+            {
+                csv.WriteField("---");
+                foreach (var _ in timesheetDays)
+                {
+                    csv.WriteField("");
+                }
+                csv.NextRecord();
+
+                csv.WriteField("Unknown Tasks");
+                foreach (var _ in timesheetDays)
+                {
+                    csv.WriteField("");
+                }
+                csv.NextRecord();
+
+                foreach (var (description, project) in unknownTasks)
+                {
+                    csv.WriteField($"{description} (project: {project})");
+                    foreach (var _ in timesheetDays)
+                    {
+                        csv.WriteField("");
+                    }
+                    csv.NextRecord();
+                }
             }
         }
     }

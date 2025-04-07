@@ -13,8 +13,7 @@ variable "domain_name" {
   type        = string
 }
 
-variable "web_app_build_path" {
-  description = "Path to the web application build directory"
+variable "route53_zone_id" {
   type        = string
-  default     = "../../TogglTimesheet.App/dist"
+  description = "Route 53 hosted zone ID for DNS records"
 }

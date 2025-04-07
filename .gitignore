@@ -410,6 +410,8 @@ TogglTimesheet/input.csv
 *.tfstate
 *.tfstate.*
 .terraform.*
+terraform/frontend/rootvars.tfvars
+terraform/backend/rootvars.tfvars
 
 # Environment files
 .env

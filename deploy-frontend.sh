@@ -3,11 +3,21 @@
 # Exit on any error
 set -e
 
-# Check if environment and domain name are provided
-if [ -z "$TF_VAR_environment" ] || [ -z "$TF_VAR_domain_name" ]; then
-    echo "❌ Error: TF_VAR_environment and TF_VAR_domain_name environment variables must be set"
+# Check if required variables are provided
+if [ -z "$TF_VAR_domain_name" ]; then
+    echo "❌ Error: TF_VAR_domain_name environment variable must be set"
     echo "Example usage:"
-    echo "TF_VAR_environment=dev TF_VAR_domain_name=your-domain.com ./deploy-frontend.sh"
+    echo "TF_VAR_domain_name=your-domain.com ./deploy-frontend.sh"
+    exit 1
+fi
+
+if [ -z "$TF_BACKEND_BUCKET" ]; then
+    echo "❌ Error: TF_BACKEND_BUCKET environment variable must be set"
+    exit 1
+fi
+
+if [ -z "$TF_BACKEND_KEY" ]; then
+    echo "❌ Error: TF_BACKEND_KEY environment variable must be set"
     exit 1
 fi
 
@@ -22,7 +32,11 @@ pnpm build
 # Apply Terraform changes for frontend stack
 echo "🏗️ Applying Terraform frontend changes..."
 cd ../terraform/frontend
-terraform init
+cp ../rootvars.tfvars .
+terraform init \
+    -backend-config="bucket=${TF_BACKEND_BUCKET}" \
+    -backend-config="key=${TF_BACKEND_KEY}/frontend.tfstate" \
+    -backend-config="region=us-east-1"
 terraform apply -auto-approve
 
 # Get the S3 bucket name from Terraform output

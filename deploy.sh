@@ -11,6 +11,14 @@ if [ -z "$TOGGL_API_TOKEN" ] || [ -z "$TOGGL_WORKSPACE_ID" ]; then
     exit 1
 fi
 
+# Check if domain name is provided
+if [ -z "$TF_VAR_domain_name" ]; then
+    echo "❌ Error: TF_VAR_domain_name environment variable must be set"
+    echo "Example usage:"
+    echo "TF_VAR_domain_name=your-domain.com ./deploy.sh"
+    exit 1
+fi
+
 # Export Terraform variables
 export TF_VAR_toggl_api_token="$TOGGL_API_TOKEN"
 export TF_VAR_toggl_workspace_id="$TOGGL_WORKSPACE_ID"
@@ -22,21 +30,10 @@ fi
 
 echo "🚀 Starting deployment process..."
 
-# Build and package the Lambda function
-echo "📦 Building and packaging Lambda function..."
-cd TogglTimesheet.Api
-dotnet restore
-dotnet publish -c Release
-dotnet lambda package --configuration Release --framework net8.0 --output-package bin/Release/net8.0/publish/package.zip
+# Deploy Lambda backend first
+./deploy-lambda.sh
 
-# Apply Terraform changes
-echo "🏗️ Applying Terraform changes..."
-cd ../terraform
-terraform init
-terraform apply -auto-approve
+# Then deploy frontend
+./deploy-frontend.sh
 
-echo "✅ Deployment completed successfully!"
-
-# Get the function URL
-echo "🌐 Lambda Function URL:"
-terraform output -raw function_url
+echo "✨ Deployment completed successfully!"

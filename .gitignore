@@ -403,9 +403,20 @@ taskRules.local.json
 appsettings.Local.json
 TogglTimesheet/out.csv
 TogglTimesheet/input.csv
+.DS_Store
 
 # Terraform
 .terraform/
 *.tfstate
 *.tfstate.*
 .terraform.*
+terraform/frontend/rootvars.tfvars
+terraform/backend/rootvars.tfvars
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production

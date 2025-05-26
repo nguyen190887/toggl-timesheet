@@ -49,7 +49,7 @@ terraform init \
     -backend-config="region=us-east-1"
 TF_VAR_toggl_api_token=$TOGGL_API_TOKEN \
 TF_VAR_toggl_workspace_id=$TOGGL_WORKSPACE_ID \
-terraform apply -auto-approve
+terraform apply -var-file="rootvars.tfvars" -auto-approve
 
 echo "✅ Lambda deployment completed successfully!"
 

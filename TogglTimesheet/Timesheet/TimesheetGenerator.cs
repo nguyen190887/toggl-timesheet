@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TogglTimesheet.Utils;
 
 namespace TogglTimesheet.Timesheet
 {
@@ -11,7 +12,7 @@ namespace TogglTimesheet.Timesheet
         void GenerateAndSave(string inputFile, string outputFile);
         MemoryStream GenerateData(Stream inputStream);
         MemoryStream ProcessAndGenerateTimesheet(IEnumerable<TimeEntryBase> entries);
-        (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays, List<(string Description, string Project)> UnknownTasks)
+        (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays, List<(string Description, string Project)> UnknownTasks, Dictionary<DateTime, double> UnroundedTotals)
             ProcessEntries(IEnumerable<TimeEntryBase> entries);
     }
 
@@ -31,9 +32,12 @@ namespace TogglTimesheet.Timesheet
             var entries = _dataProvider.LoadTimeEntries(inputFile);
             Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(entries)); // for debugging
 
-            var (timesheetData, timesheetDays, unknownTasks) = ProcessEntries(entries);
+            var (timesheetData, timesheetDays, unknownTasks, unroundedTotals) = ProcessEntries(entries);
 
-            _dataProvider.SaveTimesheet(timesheetData, timesheetDays.ToList(), outputFile, unknownTasks);
+            using (var writer = new StreamWriter(outputFile))
+            {
+                _dataProvider.SaveTimesheetToStream(writer, timesheetData, timesheetDays.ToList(), unknownTasks, unroundedTotals);
+            }
         }
 
         public MemoryStream GenerateData(Stream inputStream)
@@ -47,18 +51,18 @@ namespace TogglTimesheet.Timesheet
 
         public MemoryStream ProcessAndGenerateTimesheet(IEnumerable<TimeEntryBase> entries)
         {
-            var (timesheetData, timesheetDays, unknownTasks) = ProcessEntries(entries);
+            var (timesheetData, timesheetDays, unknownTasks, unroundedTotals) = ProcessEntries(entries);
 
             var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream, leaveOpen: true))
             {
-                _dataProvider.SaveTimesheetToStream(streamWriter, timesheetData, timesheetDays.ToList(), unknownTasks);
+                _dataProvider.SaveTimesheetToStream(streamWriter, timesheetData, timesheetDays.ToList(), unknownTasks, unroundedTotals);
             }
             memoryStream.Position = 0; // Reset the position to the beginning of the stream
             return memoryStream;
         }
 
-        public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays, List<(string Description, string Project)> UnknownTasks)
+        public (Dictionary<string, ReportedTimeEntry> TimesheetData, HashSet<DateTime> TimesheetDays, List<(string Description, string Project)> UnknownTasks, Dictionary<DateTime, double> UnroundedTotals)
             ProcessEntries(IEnumerable<TimeEntryBase> entries)
         {
             var sortedEntries = entries.OrderBy(x => x.StartDate).ThenBy(x => x.Project).ThenBy(x => x.Description);
@@ -98,7 +102,24 @@ namespace TogglTimesheet.Timesheet
                 }
             }
 
-            return (timesheetData, timesheetDays, unknownTasks);
+            // Calculate unrounded totals before rounding
+            var unroundedTotals = new Dictionary<DateTime, double>();
+            foreach (var day in timesheetDays)
+            {
+                unroundedTotals[day] = timesheetData.Values.Sum(entry =>
+                    entry.DayTime.TryGetValue(day, out var duration) ? duration : 0);
+            }
+
+            // Round all values after calculations are complete
+            foreach (var timeData in timesheetData.Values)
+            {
+                foreach (var date in timeData.DayTime.Keys.ToList())
+                {
+                    timeData.DayTime[date] = TimeUtils.RoundToQuarterHour(timeData.DayTime[date]);
+                }
+            }
+
+            return (timesheetData, timesheetDays, unknownTasks, unroundedTotals);
         }
     }
 }

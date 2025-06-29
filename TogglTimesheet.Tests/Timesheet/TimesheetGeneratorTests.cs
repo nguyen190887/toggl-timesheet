@@ -110,8 +110,8 @@ namespace TogglTimesheet.Tests.Timesheet
             var timesheetGenerator = new TimesheetGenerator(mockTaskGenerator.Object, mockDataProvider.Object);
 
             // Act
-            var inputFile = "path/to/timeentries.csv";
-            var outputFile = "path/to/output.csv";
+            var inputFile = "test_input.csv";
+            var outputFile = "test_output.csv";
             timesheetGenerator.GenerateAndSave(inputFile, outputFile);
 
             // Assert
@@ -120,7 +120,8 @@ namespace TogglTimesheet.Tests.Timesheet
             var oct1 = DateTime.Parse("2023-10-01", CultureInfo.InvariantCulture);
             var oct2 = DateTime.Parse("2023-10-02", CultureInfo.InvariantCulture);
 
-            mockDataProvider.Verify(dp => dp.SaveTimesheet(
+            mockDataProvider.Verify(dp => dp.SaveTimesheetToStream(
+                It.IsAny<StreamWriter>(),
                 It.Is<Dictionary<string, ReportedTimeEntry>>(dict =>
                     dict.Count == 3 &&
                     Math.Abs(dict["Task1"].DayTime[oct1] - 2.5) < 0.01 &&
@@ -132,12 +133,12 @@ namespace TogglTimesheet.Tests.Timesheet
                     dates.Contains(oct1) &&
                     dates.Contains(oct2)
                 ),
-                It.IsAny<string>(),
                 It.Is<IEnumerable<(string Description, string Project)>>(unknownTasks =>
                     unknownTasks.Count() == 1 &&
                     unknownTasks.First().Description == "UnknownTask" &&
                     unknownTasks.First().Project == "ProjectB"
-                )
+                ),
+                It.IsAny<Dictionary<DateTime, double>>()
             ), Times.Once);
         }
 
@@ -200,7 +201,8 @@ namespace TogglTimesheet.Tests.Timesheet
                     unknownTasks.Count() == 1 &&
                     unknownTasks.First().Description == "UnknownTask" &&
                     unknownTasks.First().Project == "Project2"
-                )
+                ),
+                It.IsAny<Dictionary<DateTime, double>>()
             ), Times.Once);
         }
     }

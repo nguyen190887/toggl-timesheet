@@ -66,7 +66,7 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      ASPNETCORE_ENVIRONMENT = var.environment
+      ASPNETCORE_ENVIRONMENT = var.runtime_environment
       Toggl__ApiToken       = var.toggl_api_token
       Toggl__WorkspaceId    = var.toggl_workspace_id
       Toggl__TaskRuleFile   = var.toggl_task_rule_file

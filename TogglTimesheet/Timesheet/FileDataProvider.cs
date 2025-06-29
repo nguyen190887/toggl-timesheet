@@ -27,6 +27,12 @@ namespace TogglTimesheet.Timesheet
             Dictionary<string, ReportedTimeEntry> entries,
             IEnumerable<DateTime> timesheetDays,
             IEnumerable<(string Description, string Project)> unknownTasks);
+        void SaveTimesheetToStream(
+            StreamWriter writer,
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            IEnumerable<(string Description, string Project)> unknownTasks,
+            Dictionary<DateTime, double>? unroundedTotals);
     }
 
     public class FileDataProvider : IDataProvider
@@ -78,7 +84,7 @@ namespace TogglTimesheet.Timesheet
 
         public void SaveTimesheetToStream(StreamWriter writer, Dictionary<string, ReportedTimeEntry> entries, IEnumerable<DateTime> timesheetDays)
         {
-            SaveTimesheetToStream(writer, entries, timesheetDays, Enumerable.Empty<(string Description, string Project)>());
+            SaveTimesheetToStream(writer, entries, timesheetDays, Enumerable.Empty<(string Description, string Project)>(), null);
         }
 
         public void SaveTimesheetToStream(
@@ -86,6 +92,16 @@ namespace TogglTimesheet.Timesheet
             Dictionary<string, ReportedTimeEntry> entries,
             IEnumerable<DateTime> timesheetDays,
             IEnumerable<(string Description, string Project)> unknownTasks)
+        {
+            SaveTimesheetToStream(writer, entries, timesheetDays, unknownTasks, null);
+        }
+
+        public void SaveTimesheetToStream(
+            StreamWriter writer,
+            Dictionary<string, ReportedTimeEntry> entries,
+            IEnumerable<DateTime> timesheetDays,
+            IEnumerable<(string Description, string Project)> unknownTasks,
+            Dictionary<DateTime, double>? unroundedTotals)
         {
             using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             var headers = timesheetDays.Select(x => x.ToString("yyyy-MM-dd")).ToList();
@@ -108,7 +124,26 @@ namespace TogglTimesheet.Timesheet
                 csv.NextRecord();
             }
 
-            // Add sum row
+            // Add separator row between time entries and total rows
+            csv.WriteField("---");
+            foreach (var _ in timesheetDays)
+            {
+                csv.WriteField("");
+            }
+            csv.NextRecord();
+
+            // Add unrounded total row if provided
+            if (unroundedTotals != null)
+            {
+                csv.WriteField("Total (unrounded)");
+                foreach (var day in timesheetDays)
+                {
+                    csv.WriteField(FormatDuration(unroundedTotals.TryGetValue(day, out var val) ? val : 0));
+                }
+                csv.NextRecord();
+            }
+
+            // Add sum row (rounded)
             csv.WriteField("Total");
             foreach (var day in timesheetDays)
             {

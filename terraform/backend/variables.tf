@@ -8,6 +8,11 @@ variable "environment" {
   type        = string
 }
 
+variable "runtime_environment" {
+  description = ".NET runtime environment"
+  type        = string
+}
+
 variable "lambda_package_path" {
   description = "Path to the Lambda function package"
   type        = string

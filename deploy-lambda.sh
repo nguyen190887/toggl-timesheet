@@ -34,14 +34,9 @@ fi
 
 echo "🚀 Starting Lambda deployment process..."
 
-# Build and package the Lambda function
-echo "📦 Building and packaging Lambda function..."
-cd TogglTimesheet.Api
-dotnet publish -c Release
-
 # Apply Terraform changes for backend stack
 echo "🏗️ Applying Terraform backend changes..."
-cd ../terraform/backend
+cd terraform/backend
 cp ../rootvars.tfvars .
 terraform init \
     -backend-config="bucket=${TF_BACKEND_BUCKET}" \
@@ -49,7 +44,8 @@ terraform init \
     -backend-config="region=us-east-1"
 TF_VAR_toggl_api_token=$TOGGL_API_TOKEN \
 TF_VAR_toggl_workspace_id=$TOGGL_WORKSPACE_ID \
-terraform apply -auto-approve
+TF_VAR_runtime_environment=$ASPNETCORE_ENVIRONMENT \
+terraform apply -var-file="rootvars.tfvars" -auto-approve
 
 echo "✅ Lambda deployment completed successfully!"
 

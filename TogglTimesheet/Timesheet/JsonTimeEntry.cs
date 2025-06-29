@@ -7,6 +7,8 @@ namespace TogglTimesheet.Timesheet
 {
     public class JsonTimeEntry : TimeEntryBase
     {
+        private static readonly TimeSpan Gmt7TimeOffset = TimeSpan.FromHours(7);
+
         [JsonPropertyName("description")]
         public override string Description { get; set; } = string.Empty;
 
@@ -28,15 +30,15 @@ namespace TogglTimesheet.Timesheet
         [JsonPropertyName("time_entries")]
         public List<TimeEntryDetail>? JsonTimeEntries
         {
-            get => null; // to allow JSON serialization process only
+            get => null;
             set
             {
                 if (value != null && value.Count > 0)
                 {
                     var entry = value[0];
                     Duration = entry.Seconds / 3600.0;
-                    StartDate = entry.Start;
-                    EndDate = entry.Stop;
+                    StartDate = entry.Start.ToOffset(Gmt7TimeOffset).DateTime;
+                    EndDate = entry.Stop.ToOffset(Gmt7TimeOffset).DateTime;
                 }
             }
         }
@@ -51,9 +53,9 @@ namespace TogglTimesheet.Timesheet
         public int Seconds { get; set; }
 
         [JsonPropertyName("start")]
-        public DateTime Start { get; set; }
+        public DateTimeOffset Start { get; set; }
 
         [JsonPropertyName("stop")]
-        public DateTime Stop { get; set; }
+        public DateTimeOffset Stop { get; set; }
     }
 }

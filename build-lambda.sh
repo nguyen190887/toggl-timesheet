@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PUBLISH_DIR="TogglTimesheet.Api/bin/Release/net8.0/publish"
 OUTPUT_ZIP="$PUBLISH_DIR/package.zip"
 TERRAFORM_DIR="$SCRIPT_DIR/terraform"
-ASPNETCORE_ENVIRONMENT=${2:-Development}
+echo "Environment: $ASPNETCORE_ENVIRONMENT"
 
 # Clean previous builds
 echo "Cleaning previous builds..."
@@ -39,9 +39,7 @@ echo "Lambda package created at: $OUTPUT_ZIP"
 # Check for deploy parameter
 if [ "$1" = "-deploy" ]; then
     echo "Proceeding with Terraform initialization and apply..."
-    cd "$TERRAFORM_DIR"
-    terraform init
-    terraform apply
+    ./deploy-lambda.sh
 else
     echo "Skip deploying. Use -deploy parameter to deploy to AWS."
 fi

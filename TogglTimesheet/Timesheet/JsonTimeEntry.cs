@@ -7,7 +7,7 @@ namespace TogglTimesheet.Timesheet
 {
     public class JsonTimeEntry : TimeEntryBase
     {
-        private static readonly TimeSpan Gmt7TimeOffset = TimeSpan.FromHours(7);
+        private static readonly TimeSpan EtTimeOffset = TimeSpan.FromHours(-5);
 
         [JsonPropertyName("description")]
         public override string Description { get; set; } = string.Empty;
@@ -37,8 +37,8 @@ namespace TogglTimesheet.Timesheet
                 {
                     var entry = value[0];
                     Duration = entry.Seconds / 3600.0;
-                    StartDate = entry.Start.ToOffset(Gmt7TimeOffset).DateTime;
-                    EndDate = entry.Stop.ToOffset(Gmt7TimeOffset).DateTime;
+                    StartDate = entry.Start.ToOffset(EtTimeOffset).DateTime;
+                    EndDate = entry.Stop.ToOffset(EtTimeOffset).DateTime;
                 }
             }
         }
